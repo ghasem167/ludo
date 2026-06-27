@@ -1,6 +1,8 @@
 import { matchInit } from "./Match/matchInit";
 import { matchLoop } from "./Match/matchLoop";
 import{matchJoin} from "./Match/matchJoin";
+import { matchJoinAttempt } from "./Match/matchJoinAttempt";
+import { matchLeave } from "./Match/matchLeave";
 
 let InitModule: nkruntime.InitModule = function (
     ctx,

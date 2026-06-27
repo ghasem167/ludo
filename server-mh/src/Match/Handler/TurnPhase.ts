@@ -11,7 +11,7 @@ export class TurnPhase {
         this.message = message;
     }
 
-    public Update(matchState: ludoMatchState): void {
+    public Update(matchState: ludoMatchState, logger: nkruntime.Logger): void {
         const turnState: TurnState = matchState.turnState;
         do {
             if (turnState.anotherChance) {

@@ -8,7 +8,7 @@ export class DicePhase {
         this.message = message;
     }
 
-    public Update(matchState: MatchState): void {
+    public Update(matchState: MatchState, logger: nkruntime.Logger): void {
        
     }
 

@@ -8,30 +8,30 @@ import { TurnPhase } from "./TurnPhase";
 
 const messageHandler: MessageHandler = new MessageHandler();
 export class GameFlowManager {
-    public startPhase:StartPhase=new StartPhase(messageHandler);
+    public startPhase:StartPhase= new StartPhase(messageHandler);
     public turnPhase: TurnPhase = new TurnPhase(messageHandler);
     public dicePhase: DicePhase = new DicePhase(messageHandler);
     public resolutionPhase: ResolutionPhase = new ResolutionPhase(messageHandler);
 
   
-    public Update(state: ludoMatchState): void {
+    public Update(state: ludoMatchState, logger: nkruntime.Logger): void {
 
         if (state.pendingPhase == null) {
             switch (state.currentPhase) {
                 case Phase.Start:
-                    this.startPhase.Update(state);
+                    this.startPhase.Update(state,logger);
                     break;
                     
                 case Phase.Turn:
-                    this.turnPhase.Update(state);
+                    this.turnPhase.Update(state,logger);
                     break;
 
                 case Phase.Dice:
-                    this.dicePhase.Update(state);
+                    this.dicePhase.Update(state,logger);
                     break;
 
                 case Phase.Resolution:
-                    this.resolutionPhase.Update(state);
+                    this.resolutionPhase.Update(state,logger);
                     break;
             }
             return;

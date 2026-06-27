@@ -16,6 +16,7 @@ export class MatchState {
     public currentPhase: Phase;
     public pendingPhase: Phase | null
     public config: MatchConfig;
+    public shouldEnd: boolean;
     public version: number;
 
     constructor(
@@ -29,6 +30,7 @@ export class MatchState {
         winnerList: PlayerColor[] = [],
         currentPhase: Phase = Phase.Start,
         pendingPhase=null,
+        shouldEnd: boolean = false,
         version: number = 1
     ) {
         this.matchStarted=matchStarted;
@@ -41,6 +43,7 @@ export class MatchState {
         this.diceState = diceState;
         this.currentPhase = currentPhase;
         this.pendingPhase = pendingPhase;
+        this.shouldEnd = shouldEnd;
         this.version = version;
     }
 }
