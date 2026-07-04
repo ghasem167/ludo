@@ -1,4 +1,5 @@
 export class Cell {
+    public index:number;
     public isInitial: boolean;
     public canBecomeSafeCell: boolean;
     public canBecomePenaltyCell: boolean;
@@ -7,6 +8,7 @@ export class Cell {
     public isFinal: boolean;
 
     constructor(
+        index:number,
         isInitial: boolean = false,
         canBecomeSafeCell: boolean = false,
         canBecomePenaltyCell: boolean = false,
@@ -14,6 +16,7 @@ export class Cell {
         isPenalty: boolean = false,
         isFinal: boolean = false
     ) {
+        this.index=index;
         this.isInitial = isInitial;
         this.canBecomeSafeCell = canBecomeSafeCell;
         this.canBecomePenaltyCell = canBecomePenaltyCell;

@@ -1,5 +1,7 @@
 import { GameFlowManager } from "./Handler/GameFlowManager";
+import { MatchContext } from "./Handler/MatchContex";
 import { MatchState as ludoMatchstate } from "./Handler/MatchState"
+
 
 
 const gameFlowManager = new GameFlowManager();
@@ -18,7 +20,8 @@ export const matchLoop = function (
 	if (matchState.shouldEnd) {
 		return null;
 	}
-	gameFlowManager.Update(matchState, logger);
+	const contex:MatchContext=new MatchContext(matchState,logger,dispatcher,nk,tick,messages);
+	gameFlowManager.Update(contex);
 	
 	return {
 		state: matchState

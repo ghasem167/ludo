@@ -26,8 +26,15 @@ export enum ClientOpCode {
 export enum ServerOpCode {
     MatchStarted,
     TurnStarted,
+    RollDiceResult,
     AvailableActions,
     BoardUpdated,
     PlayerFinish,
     GameEnded
+}
+export enum ActionType {
+    SpawnAction = 0,
+    MoveAction = 1,
+    ActivateSafeCellAction = 2,
+    ActivatePenaltyCellAction = 3
 }

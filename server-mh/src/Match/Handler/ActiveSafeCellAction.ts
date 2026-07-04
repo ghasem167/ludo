@@ -1,6 +1,7 @@
 import { Cell } from "./Cell";
 import { GameAction } from "./GameAction";
 import { ActionResult } from "./ActionResult";
+import { ActionType } from "./Enums";
 
 export class ActiveSafeCellAction extends GameAction {
     public cell: Cell;
@@ -9,8 +10,8 @@ export class ActiveSafeCellAction extends GameAction {
         cell: Cell,
         result: ActionResult = new ActionResult()
     ) {
-        super(result);
-
+        super(ActionType.ActivateSafeCellAction, result);
+        
         this.cell = cell;
     }
 }

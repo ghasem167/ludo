@@ -5,9 +5,9 @@ export class DiceState {
     public waitingForActionSelect: boolean;
 
     constructor(
-        waitingForRoll: boolean = true,
+        waitingForRoll: boolean = false,
         diceValue: number = 0,
-        timeoutTick: number = 0,
+        timeoutTick: number = 60,
         waitingForActionSelect: boolean = false
     ) {
         this.waitingForRoll = waitingForRoll;

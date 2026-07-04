@@ -1,39 +1,47 @@
-import { MatchState } from "./MatchState";
-import { MessageHandler } from "./MessageHandler";
 import { Phase, PlayerColor } from "./Enums";
 import { Player } from "./Player";
+import { PhaseBase } from "./PhaseBase";
+import { MatchContext } from "./MatchContex";
+import { Piece } from "./Piece";
+import { PieceState } from "./PieceState";
 
-export class StartPhase {
+export class StartPhase extends PhaseBase {
 
-    private message: MessageHandler;
 
-    constructor(message: MessageHandler) {
-        this.message = message;
+    public override Update(context: MatchContext): void {
 
-    }
-
-    public Update(state: MatchState,logger: nkruntime.Logger): void {
-
-        if (state.startDelayTicks <= 0) {
-            const activePlayers = state.players.length;
+        if (context.state.config.startDelayTicks <= 0) {
+            const activePlayers = context.state.players.length;
             for (let i = activePlayers; i < 4; i++) {
+                const pieces = [];
+                const color: PlayerColor = context.state.players.length as PlayerColor;
                 const botPlayer = new Player(
-                    state.players.length as PlayerColor,
+                    context.state.players.length as PlayerColor,
                     `bot_${i}`,
                     `Bot ${i + 1}`,
                     `Bot ${i + 1}`
+
                 );
+                for (let i = 0; i < 3; i++) {
+
+                    const piece = new Piece(i, context.state.board.cells[
+                        context.state.board.config.playerPath[color].initialCells[i]
+                    ], new PieceState(),botPlayer);
+                    
+                    pieces.push(piece);
+                }
+                botPlayer.pieces = pieces;
                 botPlayer.presence = null;
                 botPlayer.playerState.isPresent = false;
                 botPlayer.playerState.isBot = true;
-                state.players.push(botPlayer);
+                context.state.players.push(botPlayer);
             }
-            logger.info(`Match started with ${state.players.length} players.players: ${state.players.map(p => p.userName).join(", ")}`);
-            state.matchStarted = true;
-            state.pendingPhase = Phase.Turn;
+            context.logger.info(`Match started with ${context.state.players.length} players.players: ${context.state.players.map(p => p.userName).join(", ")}`);
+            context.state.matchStarted = true;
+            context.state.pendingPhase = Phase.Turn;
             return;
         }
 
-        state.startDelayTicks--;
+        context.state.config.startDelayTicks--;
     }
 }

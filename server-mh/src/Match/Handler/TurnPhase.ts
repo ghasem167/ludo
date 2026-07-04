@@ -1,18 +1,15 @@
 import { Phase, PlayerColor } from "./Enums";
+import { MatchContext } from "./MatchContex";
 import { MatchState as ludoMatchState } from "./MatchState";
-import { MessageHandler } from "./MessageHandler";
+import { PhaseBase } from "./PhaseBase";
 import { Player } from "./Player";
 import { TurnState } from "./TurnState";
 
-export class TurnPhase {
-    private message: MessageHandler;
+export class TurnPhase extends PhaseBase {
+   
 
-    constructor(message: MessageHandler) {
-        this.message = message;
-    }
-
-    public Update(matchState: ludoMatchState, logger: nkruntime.Logger): void {
-        const turnState: TurnState = matchState.turnState;
+    public override Update(contex:MatchContext): void {
+        const turnState: TurnState = contex.state.turnState;
         do {
             if (turnState.anotherChance) {
                 turnState.anotherChance = false;
@@ -29,12 +26,12 @@ export class TurnPhase {
                 turnState.repeat = 0;
 
             }
-        } while (matchState.players[turnState.currentPlayer].playerState.isFinished && matchState.winnerList.length < 3);
+        } while (contex.state.players[turnState.currentPlayer].playerState.isFinished && contex.state.winnerList.length < 3);
 
-        if (!(matchState.players[turnState.currentPlayer].playerState.lights > 0)) {
-            this.FirePlayer(matchState.players,turnState.currentPlayer);
+        if (!(contex.state.players[turnState.currentPlayer].playerState.lights > 0)) {
+            this.FirePlayer(contex.state.players,turnState.currentPlayer);
         }
-        matchState.pendingPhase=Phase.Dice;
+        contex.state.pendingPhase=Phase.Dice;
         
 
     }

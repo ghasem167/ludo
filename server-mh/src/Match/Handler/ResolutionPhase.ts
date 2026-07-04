@@ -1,14 +1,10 @@
+import { MatchContext } from "./MatchContex";
 import { MatchState } from "./MatchState";
-import { MessageHandler } from "./MessageHandler";
+import { PhaseBase } from "./PhaseBase";
 
-export class ResolutionPhase {
-    private message: MessageHandler;
-
-    constructor(message: MessageHandler) {
-        this.message = message;
-    }
-
-    public Update(matchState: MatchState, logger: nkruntime.Logger): void {
+export class ResolutionPhase extends PhaseBase {
+ 
+    public Update(contex:MatchContext): void {
       
     }
 

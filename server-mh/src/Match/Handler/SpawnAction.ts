@@ -1,6 +1,7 @@
 import { Piece } from "./Piece";
 import { GameAction } from "./GameAction";
 import { ActionResult } from "./ActionResult";
+import { ActionType } from "./Enums";
 
 export class SpawnAction extends GameAction {
     public piece: Piece;
@@ -9,7 +10,7 @@ export class SpawnAction extends GameAction {
         piece: Piece,
         result: ActionResult = new ActionResult()
     ) {
-        super(result);
+        super(ActionType.SpawnAction, result);
 
         this.piece = piece;
     }

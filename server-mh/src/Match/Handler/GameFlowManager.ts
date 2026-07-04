@@ -1,43 +1,44 @@
 import { DicePhase } from "./DicePhase";
 import { Phase } from "./Enums";
+import { MatchContext } from "./MatchContex";
 import { MatchState as ludoMatchState } from "./MatchState";
-import { MessageHandler } from "./MessageHandler";
 import { ResolutionPhase } from "./ResolutionPhase";
 import { StartPhase } from "./StartPhase";
 import { TurnPhase } from "./TurnPhase";
 
-const messageHandler: MessageHandler = new MessageHandler();
+
 export class GameFlowManager {
-    public startPhase:StartPhase= new StartPhase(messageHandler);
-    public turnPhase: TurnPhase = new TurnPhase(messageHandler);
-    public dicePhase: DicePhase = new DicePhase(messageHandler);
-    public resolutionPhase: ResolutionPhase = new ResolutionPhase(messageHandler);
+   
+    public startPhase:StartPhase= new StartPhase();
+    public turnPhase: TurnPhase = new TurnPhase();
+    public dicePhase: DicePhase = new DicePhase();
+    public resolutionPhase: ResolutionPhase = new ResolutionPhase();
 
-  
-    public Update(state: ludoMatchState, logger: nkruntime.Logger): void {
-
-        if (state.pendingPhase == null) {
-            switch (state.currentPhase) {
+    
+    public Update(contex:MatchContext): void {
+        
+        if (contex.state.pendingPhase == null) {
+            switch (contex.state.currentPhase) {
                 case Phase.Start:
-                    this.startPhase.Update(state,logger);
+                    this.startPhase.Update(contex);
                     break;
                     
                 case Phase.Turn:
-                    this.turnPhase.Update(state,logger);
+                    this.turnPhase.Update(contex);
                     break;
 
                 case Phase.Dice:
-                    this.dicePhase.Update(state,logger);
+                    this.dicePhase.Update(contex);
                     break;
 
                 case Phase.Resolution:
-                    this.resolutionPhase.Update(state,logger);
+                    this.resolutionPhase.Update(contex);
                     break;
             }
             return;
         }
-        state.currentPhase = state.pendingPhase;
+        contex.state.currentPhase = contex.state.pendingPhase;
 
-        state.pendingPhase = null;
+        contex.state.pendingPhase = null;
     }
 }

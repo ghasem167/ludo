@@ -6,8 +6,7 @@ import { DiceState } from "./DiceState";
 import { MatchConfig } from "./MatchConfig";
 
 export class MatchState {
-    public matchStarted:boolean;
-    public startDelayTicks:number;
+    public matchStarted:boolean;    
     public board: Board;
     public players: Player[];
     public winnerList: PlayerColor[];
@@ -21,7 +20,6 @@ export class MatchState {
 
     constructor(
         matchStarted:boolean,
-        startDelayTicks:number,
         board: Board,
         config: MatchConfig,
         turnState: TurnState,
@@ -34,7 +32,6 @@ export class MatchState {
         version: number = 1
     ) {
         this.matchStarted=matchStarted;
-        this.startDelayTicks=startDelayTicks;
         this.board = board;
         this.config = config;
         this.players = players;

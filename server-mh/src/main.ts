@@ -1,8 +1,11 @@
 import { matchInit } from "./Match/matchInit";
 import { matchLoop } from "./Match/matchLoop";
-import{matchJoin} from "./Match/matchJoin";
+import { matchJoin } from "./Match/matchJoin";
 import { matchJoinAttempt } from "./Match/matchJoinAttempt";
 import { matchLeave } from "./Match/matchLeave";
+import { MatchConfig } from "./Match/Handler/MatchConfig";
+import { GameMode } from "./Match/Handler/Enums";
+import { TeamMode } from "./Match/Handler/Enums";
 
 let InitModule: nkruntime.InitModule = function (
     ctx,
@@ -33,13 +36,36 @@ let InitModule: nkruntime.InitModule = function (
         nk,
         matches
     ) {
+        const m = matches[0];
 
-        logger.info("Matchmaker matched: " + matches.length);
+        const config: MatchConfig = {
+            mode: Number(m.properties["gameMode"]) as GameMode,
+            team: Number(m.properties["teamMode"]) as TeamMode,
+            startDelayTicks:200,
+            turnTimeOutSecond: 10,
+            diceTimeOutSecond: 6,
+            botTimeOutSecond: 3
 
-        return nk.matchCreate("ludo", {
-            initialPresences: matches
-        });
+        };
+
+        return CreateLudoMatch(
+            nk,
+            config,
+            matches.map(m => m.presence)
+        );
     });
 
     logger.info("Module loaded");
 };
+
+function CreateLudoMatch(
+    nk: nkruntime.Nakama,
+    config: MatchConfig,
+    presences: nkruntime.Presence[]
+): string {
+
+    return nk.matchCreate("ludo", {
+        config: JSON.stringify(config),
+        initialPresences: JSON.stringify(presences)
+    });
+}

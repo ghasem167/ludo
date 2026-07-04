@@ -10,10 +10,9 @@ export class PlayerState {
     public hasOffer: boolean;
     public hasSpecialSafeCell: boolean;
     public hasSpecialPenaltyCell: boolean;
-    public color: PlayerColor;
+    
 
     constructor(
-        color: PlayerColor,
         placeInBoard: number = 0,
         lights: number = 3,
         isPresent: boolean = true,
@@ -24,7 +23,6 @@ export class PlayerState {
         hasSpecialSafeCell: boolean = false,
         hasSpecialPenaltyCell: boolean = false
     ) {
-        this.color = color;
         this.placeInBoard = placeInBoard;
         this.lights = lights;
         this.isPresent = isPresent;
