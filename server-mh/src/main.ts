@@ -1,62 +1,73 @@
-import { matchInit } from "./Match/matchInit";
-import { matchLoop } from "./Match/matchLoop";
-import { matchJoin } from "./Match/matchJoin";
-import { matchJoinAttempt } from "./Match/matchJoinAttempt";
-import { matchLeave } from "./Match/matchLeave";
-import { MatchConfig } from "./Match/Handler/MatchConfig";
-import { GameMode } from "./Match/Handler/Enums";
-import { TeamMode } from "./Match/Handler/Enums";
+import { matchInit } from "./Match/Handler/matchInit";
+import { matchJoinAttempt } from "./Match/Handler/matchJoinAttempt";
+import { matchJoin } from "./Match/Handler/matchJoin";
+import { matchLeave } from "./Match/Handler/matchLeave";
+import { matchLoop } from "./Match/Handler/matchLoop";
+import { matchTerminate } from "./Match/Handler/matchTerminate";
+import { matchSignal } from "./Match/Handler/matchSignal";
+import { MatchConfig } from "./Match/Handler/Models/MatchConfig";
+import { GameMode, TeamMode } from "./Match/Handler/Enums";
 
-let InitModule: nkruntime.InitModule = function (
-    ctx,
-    logger,
-    nk,
-    initializer
+function InitModule(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    initializer: nkruntime.Initializer
 ) {
+    logger.info("Module is loading...");
 
-    // =========================
-    // MATCH REGISTRATION
-    // =========================
-    initializer.registerMatch("ludo", {
-        matchInit,
-        matchJoinAttempt,
-        matchJoin,
-        matchLeave,
-        matchLoop,
-        matchTerminate,
-        matchSignal
-    });
+    try {
+        initializer.registerMatch("ludo", {
+            matchInit,
+            matchJoinAttempt,
+            matchJoin,
+            matchLeave,
+            matchLoop,
+            matchTerminate,
+            matchSignal,
+        });
 
+        logger.info("registerMatch completed successfully");
+    }
+    catch (e: any) {
+        logger.error("REGISTER ERROR: " + String(e));
+        logger.error("MESSAGE: " + e?.message);
+        logger.error("STACK: " + e?.stack);
+        throw e;
+    }
     // =========================
     // MATCHMAKER (ADD THIS)
     // =========================
-    initializer.registerMatchmakerMatched(function (
-        ctx,
-        logger,
-        nk,
-        matches
-    ) {
-        const m = matches[0];
-
-        const config: MatchConfig = {
-            mode: Number(m.properties["gameMode"]) as GameMode,
-            team: Number(m.properties["teamMode"]) as TeamMode,
-            startDelayTicks:200,
-            turnTimeOutSecond: 10,
-            diceTimeOutSecond: 6,
-            botTimeOutSecond: 3
-
-        };
-
-        return CreateLudoMatch(
-            nk,
-            config,
-            matches.map(m => m.presence)
-        );
-    });
+    logger.info("Registering matchmaker matched callback");
+    initializer.registerMatchmakerMatched(
+        matchmakerMatched
+    );
 
     logger.info("Module loaded");
 };
+
+(globalThis as any).InitModule = InitModule;
+
+function matchmakerMatched(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    matches: nkruntime.MatchmakerResult[]
+) {
+    const m = matches[0];
+
+    const config: MatchConfig = {
+        mode: Number(m.properties["gameMode"]) as GameMode,
+        team: Number(m.properties["teamMode"]) as TeamMode,
+    };
+
+    return CreateLudoMatch(
+        nk,
+        config,
+        matches.map(m => m.presence)
+    );
+}
+
 
 function CreateLudoMatch(
     nk: nkruntime.Nakama,

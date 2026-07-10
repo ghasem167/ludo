@@ -9,7 +9,8 @@ export enum Phase {
     Turn = 1,
     Dice = 2,
     Action = 3,
-    Resolution = 4
+    Resolution = 4,
+    Finish=5
 }
 export enum GameMode {
     Modern = 0,
@@ -28,6 +29,7 @@ export enum ServerOpCode {
     TurnStarted,
     RollDiceResult,
     AvailableActions,
+    ActionExecuted,
     BoardUpdated,
     PlayerFinish,
     GameEnded

@@ -1,0 +1,6 @@
+ "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    ,
+    "build": "rollup -c rollup.config.mjs",
+    "watch": "rollup -c -w"

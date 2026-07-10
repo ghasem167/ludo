@@ -1,15 +1,22 @@
 {
+  "files": [
+
+    
+    "./src/main.ts",
+    
+  ],
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
-    "target": "es5",
-    "rootDir": "./src",
-    "outFile": "./build/index.js",
-    "module": "amd",
-
+    "target": "es2017",
     "strict": true,
-
+    "removeComments": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "typeRoots": [
+      "./node_modules"
+    ],
     "types": ["nakama-runtime"],
-    "typeRoots": ["./node_modules"]
-  },
-  "include": ["src/**/*.ts"]
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
 }
