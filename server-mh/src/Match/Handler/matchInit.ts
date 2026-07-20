@@ -4,26 +4,39 @@ import { MatchState } from "./Models/MatchState";
 import { TurnState } from "./Models/TurnState";
 import { Board } from "./Models/Board";
 import { BoardConfig } from "./Models/BoardConfig";
-import { PlayerColor, TeamMode } from "./Enums";
+import { GameMode, PlayerColor, TeamMode } from "./Enums";
 import { Player } from "./Models/Player";
 
 import { MATCH_TICK_RATE } from "./Consts";
+import { MatchLabel } from "./MatchLabel";
 
 
 
-export function matchInit (ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, params: { [key: string]: string }): { state: nkruntime.MatchState, tickRate: number, label: string } {
+export function matchInit(
+	ctx: nkruntime.Context,
+	logger: nkruntime.Logger,
+	nk: nkruntime.Nakama,
+	params: { [key: string]: string }): {
+		state: nkruntime.MatchState,
+		tickRate: number,
+		label: string
+	} {
 
-	logger.debug('Lobby match created');
-	const initialPresences = JSON.parse(
-		params.initialPresences
-	) as nkruntime.Presence[];
-	const matchConfig = JSON.parse(params.config) as MatchConfig;
+	logger.info("LUDO MATCH INIT");
+	logger.info(JSON.stringify(params));
+
+	const matchConfig = new MatchConfig(
+		Number(params.gameMode) as GameMode,
+		Number(params.teamMode) as TeamMode
+	);
 
 	const board = new Board(BoardConfig.ClassicLudo());
-	const players = [] = [Player.CreateHuman(PlayerColor.Blue, initialPresences[0], board),
-	Player.CreateBot(PlayerColor.Red, board),
-	Player.CreateBot(PlayerColor.Yellow, board),
-	Player.CreateBot(PlayerColor.Green, board)]
+	const players: Player[] = [
+		Player.CreateBot(PlayerColor.Blue, board),
+		Player.CreateBot(PlayerColor.Red, board),
+		Player.CreateBot(PlayerColor.Yellow, board),
+		Player.CreateBot(PlayerColor.Green, board)
+	];
 
 	if (matchConfig.team == TeamMode.TwoVsTwo) {
 		players[0].friend = players[2];
@@ -36,10 +49,10 @@ export function matchInit (ctx: nkruntime.Context, logger: nkruntime.Logger, nk:
 		matchConfig,
 		new TurnState(PlayerColor.Blue, false, false, false, false, 0),
 		new DiceState(false, 0, false), players);
-
+	mState.label=new MatchLabel(matchConfig.mode, matchConfig.team);
 	return {
 		state: mState,
 		tickRate: MATCH_TICK_RATE,
-		label: "ludo-match"
+		label: mState.label.toJson()
 	};
 };

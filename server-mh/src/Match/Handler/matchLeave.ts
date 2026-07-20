@@ -1,7 +1,13 @@
 import { MatchState } from "./Models/MatchState";
 
-export function matchLeave (ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, dispatcher: nkruntime.MatchDispatcher, tick: number, state: nkruntime.MatchState, presences: nkruntime.Presence[]): { state: nkruntime.MatchState } | null {
- 
+export function matchLeave(
+	ctx: nkruntime.Context,
+	logger: nkruntime.Logger,
+	nk: nkruntime.Nakama,
+	dispatcher: nkruntime.MatchDispatcher,
+	tick: number, state: nkruntime.MatchState,
+	presences: nkruntime.Presence[]): { state: nkruntime.MatchState } | null {
+
 	const mState = state as MatchState;
 
 	for (const presence of presences) {
@@ -20,6 +26,7 @@ export function matchLeave (ctx: nkruntime.Context, logger: nkruntime.Logger, nk
 			player.playerState.isPresent = false;
 			player.presence = null;
 
+
 		} else {
 
 			// قبل از شروع بازی، بازیکن را حذف کن
@@ -27,6 +34,8 @@ export function matchLeave (ctx: nkruntime.Context, logger: nkruntime.Logger, nk
 				p => p.userId !== presence.userId
 			);
 		}
+		mState.label.presentPlayerCount--;
+		mState.label.update(dispatcher);
 	}
 
 	// اگر هیچ بازیکن انسانی باقی نمانده باشد، مچ را خاتمه بده

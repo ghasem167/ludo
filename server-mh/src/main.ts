@@ -5,9 +5,8 @@ import { matchLeave } from "./Match/Handler/matchLeave";
 import { matchLoop } from "./Match/Handler/matchLoop";
 import { matchTerminate } from "./Match/Handler/matchTerminate";
 import { matchSignal } from "./Match/Handler/matchSignal";
-import { MatchConfig } from "./Match/Handler/Models/MatchConfig";
 import { GameMode, TeamMode } from "./Match/Handler/Enums";
-
+import { MatchLabel } from "./Match/Handler/MatchLabel";
 function InitModule(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
@@ -15,6 +14,16 @@ function InitModule(
     initializer: nkruntime.Initializer
 ) {
     logger.info("Module is loading...");
+
+    // =========================
+    // REGISTER RPC
+    // =========================
+
+    initializer.registerRpc("FindOrCreateGame", FindOrCreateGame);
+
+    // =========================
+    // MATCH HANDLER
+    // =========================
 
     try {
         initializer.registerMatch("ludo", {
@@ -38,45 +47,85 @@ function InitModule(
     // =========================
     // MATCHMAKER (ADD THIS)
     // =========================
-    logger.info("Registering matchmaker matched callback");
-    initializer.registerMatchmakerMatched(
-        matchmakerMatched
-    );
+
 
     logger.info("Module loaded");
 };
 
 (globalThis as any).InitModule = InitModule;
 
-function matchmakerMatched(
+
+
+
+
+
+function FindOrCreateGame(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
     nk: nkruntime.Nakama,
-    matches: nkruntime.MatchmakerResult[]
+    params: string
+
 ) {
-    const m = matches[0];
+    const req = JSON.parse(params);
+    const oldMatchId = req.matchId;
+    const teamMode = Number(req.teamMode) as TeamMode;
+    const gameMode = Number(req.gameMode) as GameMode;
 
-    const config: MatchConfig = {
-        mode: Number(m.properties["gameMode"]) as GameMode,
-        team: Number(m.properties["teamMode"]) as TeamMode,
-    };
+    if (oldMatchId) {
 
-    return CreateLudoMatch(
-        nk,
-        config,
-        matches.map(m => m.presence)
+        const oldMatch = nk.matchGet(oldMatchId);
+
+        if (oldMatch) {
+
+            logger.info(
+                "Reconnect match found: %s",
+                oldMatchId
+            );
+
+            return JSON.stringify({
+                matchId: oldMatchId,
+                reconnect: true
+            });
+        }
+
+        logger.info(
+            "Old match not found: %s",
+            oldMatchId
+        );
+    }
+
+    const query =
+        `+label.matchStarted:false ` +
+        `+label.gameMode:${gameMode} ` +
+        `+label.teamMode:${teamMode} ` +
+        `+label.presentPlayerCount:<4`;
+    const matches = nk.matchList(
+        20,
+        true,
+        "ludo",
+        0,
+        3,
+        query
     );
-}
+    matches.sort((a, b) => MatchLabel.compare(a.label, b.label));
+
+    if (matches.length > 0) {
+
+        return JSON.stringify({
+            matchId: matches[0].matchId
+        });
+
+    }
 
 
-function CreateLudoMatch(
-    nk: nkruntime.Nakama,
-    config: MatchConfig,
-    presences: nkruntime.Presence[]
-): string {
+    // هیچ مچی پیدا نشد، یکی جدید بساز
+    const matchId = nk.matchCreate("ludo", {
+        teamMode: teamMode,
+        gameMode: gameMode,
+        creatorUserId: ctx.userId
+    });
 
-    return nk.matchCreate("ludo", {
-        config: JSON.stringify(config),
-        initialPresences: JSON.stringify(presences)
+    return JSON.stringify({
+        matchId
     });
 }

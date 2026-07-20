@@ -3,7 +3,7 @@ import { MatchState } from "./Models/MatchState";
 import { Player } from "./Models/Player";
 import { MATCH_TICK_RATE } from "./Consts";
 
-export function matchJoin (ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, dispatcher: nkruntime.MatchDispatcher, tick: number, state: nkruntime.MatchState, presences: nkruntime.Presence[]): { state: nkruntime.MatchState } | null {
+export function matchJoin(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, dispatcher: nkruntime.MatchDispatcher, tick: number, state: nkruntime.MatchState, presences: nkruntime.Presence[]): { state: nkruntime.MatchState } | null {
 
 	const mState = state as MatchState;
 
@@ -20,6 +20,8 @@ export function matchJoin (ctx: nkruntime.Context, logger: nkruntime.Logger, nk:
 			player.presence = presence;
 			player.playerState.isPresent = true;
 			player.playerState.isBot = false;
+			mState.label.presentPlayerCount++;
+			mState.label.update(dispatcher);
 		}
 		else {
 			// Join جدید
@@ -27,6 +29,9 @@ export function matchJoin (ctx: nkruntime.Context, logger: nkruntime.Logger, nk:
 
 			if (bot) {
 				Player.ConvertToHuman(bot!, presence);
+				mState.label.presentPlayerCount++;
+				mState.label.update(dispatcher);
+
 			}
 
 		}

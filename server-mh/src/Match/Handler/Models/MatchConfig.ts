@@ -8,8 +8,8 @@ export class MatchConfig {
 
     constructor(
        
-        mode: GameMode.Classic,
-        team: TeamMode.None,
+        mode:GameMode= GameMode.Classic,
+        team:TeamMode= TeamMode.None,
     ) {
         
         this.mode = mode;

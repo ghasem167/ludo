@@ -1,9 +1,6 @@
 {
   "files": [
-
-    
     "./src/main.ts",
-    
   ],
   "compilerOptions": {
     "target": "es2017",
@@ -14,9 +11,15 @@
     "typeRoots": [
       "./node_modules"
     ],
-    "types": ["nakama-runtime"],
+    "types": [
+      "nakama-runtime"
+    ],
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  }
+    "forceConsistentCasingInFileNames": true,
+  },
+  "include": [
+      "src/**/*.ts"
+    ]
+  
 }

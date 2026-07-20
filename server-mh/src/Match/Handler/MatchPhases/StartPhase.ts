@@ -15,6 +15,8 @@ export class StartPhase extends PhaseBase {
 
             context.logger.info(`Match started with ${context.state.players.length} players.players: ${context.state.players.map((p: Player) => p.userName).join(", ")}`);
             context.state.matchStarted = true;
+            context.state.label.matchStarted = true;
+            context.state.label.update(context.dispatcher);
             context.state.pendingPhase = Phase.Turn;
             return;
         }

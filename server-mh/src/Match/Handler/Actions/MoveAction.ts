@@ -7,17 +7,17 @@ import { MatchContext } from "../Models/MatchContex";
 
 export class MoveAction extends GameAction {
     public piece: Piece;
-    public targetCell: Cell;
+    public path: Cell[];
 
     constructor(
         piece: Piece,
-        targetCell: Cell,
+        path: Cell[],
         result: ActionResult = new ActionResult()
     ) {
         super(ActionType.MoveAction, result);
 
         this.piece = piece;
-        this.targetCell = targetCell;
+        this.path = path;
     }
     public override ToObject() {
         return {
@@ -26,12 +26,14 @@ export class MoveAction extends GameAction {
                 color: this.piece.player.color,
                 index: this.piece.id
             },
-            targetCell: this.targetCell.index
+            path: this.path.map(cell => cell.index)
 
         };
     }
     public override Apply(context: MatchContext): void {
-        this.piece.currentCell = this.targetCell;
+        if (this.path.length > 0) {
+            this.piece.currentCell = this.path[this.path.length - 1];
+        }
         this.piece.pieceState.hasLeftStart = true;
 
         if (this.result.capturedEnemy)
@@ -47,9 +49,8 @@ export class MoveAction extends GameAction {
             this.piece.player.playerState.isFinished = true;
             context.state.winnerList.push(this.piece.player.color);
         }
-        if(this.result.matchFinish)
-        {
-            context.state.matchFinish=true;
+        if (this.result.matchFinish) {
+            context.state.matchFinish = true;
         }
 
 

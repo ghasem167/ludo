@@ -5,6 +5,7 @@ import { TurnState } from "./TurnState";
 import { DiceState } from "./DiceState";
 import { MatchConfig } from "./MatchConfig";
 import { GameAction } from "../Actions/GameAction";
+import { MatchLabel } from "../MatchLabel";
 
 export class MatchState {
     public tickCounter:number=0;
@@ -21,6 +22,7 @@ export class MatchState {
     public config: MatchConfig;
     public matchEnd: boolean;
     public matchFinish:boolean;
+    public label:MatchLabel;
     public version: number;
 
     constructor(
@@ -43,6 +45,9 @@ export class MatchState {
         this.pendingPhase = Phase.Start;
         this.matchEnd=false,
         this.matchFinish=false;
+        this.label=new MatchLabel();
+        this.label.teamMode=config.team;
+        this.label.gameMode=config.mode;
         this.version = 1;
     }
 }

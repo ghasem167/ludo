@@ -56,7 +56,7 @@ export class RuleEngine {
         }
 
     }
-    private CheckForSpecialActions():void {
+    private CheckForSpecialActions(): void {
 
         if (!this.player)
             return;
@@ -90,13 +90,16 @@ export class RuleEngine {
 
             if (piece.pieceState.finished)
                 continue;
-            const destination = this.FindDestination(
+            let path: Cell[] | null = this.FindPath(
                 piece,
                 this.matchState.diceState.diceValue
             );
 
-            if (!destination)
+            if (!path)
                 continue;
+            let destination = null;
+            destination = path[path?.length - 1];
+
 
             const pieceInDestination = this.GetPieceAt(destination);
 
@@ -107,7 +110,7 @@ export class RuleEngine {
 
                     this.AddMoveAction(
                         piece,
-                        destination,
+                        path,
                         new ActionResult(pieceInDestination)
                     );
                 }
@@ -124,7 +127,7 @@ export class RuleEngine {
                     matchFinished = true;
                 this.AddMoveAction(
                     piece,
-                    destination,
+                    path,
                     new ActionResult(null, false, pieceFinished, playerFinished, matchFinished)
                 );
 
@@ -136,7 +139,7 @@ export class RuleEngine {
 
                 this.AddMoveAction(
                     piece,
-                    destination,
+                    path,
                     new ActionResult(null, true)
                 );
 
@@ -146,7 +149,7 @@ export class RuleEngine {
             // حرکت عادی
             this.AddMoveAction(
                 piece,
-                destination,
+                path,
                 new ActionResult()
             );
         }
@@ -176,8 +179,8 @@ export class RuleEngine {
             new ActivatePenaltyCellAction(cell)
         );
     }
-    private AddMoveAction(piece: Piece, targetCell: Cell, result: ActionResult | undefined) {
-        this.availableActions.push(new MoveAction(piece, targetCell, result))
+    private AddMoveAction(piece: Piece, path: Cell[], result: ActionResult | undefined) {
+        this.availableActions.push(new MoveAction(piece, path, result))
     }
     private GetSpawnablePieces(): Piece[] {
 
@@ -191,10 +194,10 @@ export class RuleEngine {
     }
 
 
-    private FindDestination(piece: Piece, diceValue: number): Cell | null {
+    private FindPath(piece: Piece, diceValue: number): Cell[] | null {
 
         const originalCell = piece.currentCell;
-
+        const path: Cell[] = [];
         for (let i = 0; i < diceValue; i++) {
 
             const nextCell = this.NextCell(piece);
@@ -203,17 +206,17 @@ export class RuleEngine {
                 piece.currentCell = originalCell;
                 return null;
             }
-
+            path.push(nextCell);
             // فقط برای محاسبه مسیر
             piece.currentCell = nextCell;
+
         }
 
-        const destination = piece.currentCell;
 
         // وضعیت واقعی مهره تغییر نکند
         piece.currentCell = originalCell;
 
-        return destination;
+        return path;
     }
     private NextCell(piece: Piece): Cell | null {
 

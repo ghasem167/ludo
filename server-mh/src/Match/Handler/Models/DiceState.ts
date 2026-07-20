@@ -1,3 +1,4 @@
+
 export class DiceState {
     public waitingForRoll: boolean;
     public diceValue: number;
