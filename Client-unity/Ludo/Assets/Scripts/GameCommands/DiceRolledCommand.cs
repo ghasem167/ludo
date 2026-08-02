@@ -7,13 +7,45 @@ public class DiceRolledCommand : GameCommand
     public DiceRolledDto diceRolled;
     public DiceRolledCommand(DiceRolledDto dto)
     {
-        this.diceRolled = dto;
+        diceRolled = dto;
     }
 
 
-    public override async Task Execute()
+    public override Task Execute()
     {
-        //add Player To ui
-        await Task.CompletedTask;
+
+        for (int i = 0; i < diceRolled.AvailableActions.Count; i++)
+        {
+            var action = diceRolled.AvailableActions[i];
+            ActionSelectable obj = null;
+
+            switch (action.Type)
+            {
+                case GameActionType.Move:
+                case GameActionType.Spawn:
+
+                    obj = GameManager.Instance.BoardFactory.Board.GetPiece(
+                        diceRolled.colorInTurn,
+                        action.PieceIndex
+                    );
+
+                    break;
+
+
+                case GameActionType.ActivateSafeCell:
+                case GameActionType.ActivatePenaltyCell:
+
+                    obj = GameManager.Instance.BoardFactory.Board.GetCell(
+                        action.CellIndexes[0]
+                    );
+
+                    break;
+            }
+
+
+            obj?.SetSelectable(i);
+        }
+
+        return Task.CompletedTask;
     }
 }

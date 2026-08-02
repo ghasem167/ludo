@@ -12,7 +12,8 @@ public class TurnStartedCommand:GameCommand
     }
       public override async Task Execute()
     {
-        //Dice Roller Active
+        GameManager.Instance.lastContext.CurrentPlayer=playerInTurn.Color;
+        
         await Task.CompletedTask;
     }
 }

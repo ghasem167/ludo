@@ -1,5 +1,7 @@
 
+using System;
 
+[Serializable]
 public class PlayerDto
 {
     public string Id;

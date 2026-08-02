@@ -4,11 +4,15 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+
     public static GameManager Instance { get; private set; }
-    public GameNetworkServices networkService { get; private set; }
+    public SceneService SceneServices { get; set; }
+    public GameNetworkServices NetworkService { get; private set; }
+    public GameContext LastContext { get; private set; }
+    public PlayMode PlayMode { get; set; }
 
-    public PlayMode playMode { get; set; }
-
+    public GameAssets GameAssets{get;set;}
+    public BoardFactory BoardFactory{get;set;}
 
 
     void Awake()
@@ -20,9 +24,11 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        if (playMode == PlayMode.Online)
+        SceneServices = new SceneService();
+        LastContext = new GameContext();
+        if (PlayMode == PlayMode.Online)
         {
-            networkService = new GameNetworkServices();
+            NetworkService = new GameNetworkServices();
             _ = InitializeNetwork();
         }
 
@@ -31,7 +37,7 @@ public class GameManager : MonoBehaviour
 
     private async Task InitializeNetwork()
     {
-        await networkService.InitializeAsync();
+        await NetworkService.InitializeAsync();
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

@@ -4,10 +4,14 @@ using System.Threading.Tasks;
 
 public class ActionSelectedCommand:GameCommand
 {
-    
+    GameActionDto selectedAction;
+    public ActionSelectedCommand(GameActionDto gameActionDto)
+    {
+        selectedAction=gameActionDto;
+    }
       public override async Task Execute()
     {
-        //add Player To ui
+        
         await Task.CompletedTask;
     }
 }

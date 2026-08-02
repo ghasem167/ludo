@@ -130,7 +130,7 @@ public class GameNetworkServices
     private GameCommand BuildTurnStartedCommand(IMatchState message)
     {
         var dto = Deserialize<TurnStartedDto>(message);
-
+        
         return new TurnStartedCommand(dto);
     }
 
@@ -143,7 +143,7 @@ public class GameNetworkServices
 
     private GameCommand BuildActionSelectedCommand(IMatchState message)
     {
-        var dto = Deserialize<ActionSelectedDto>(message);
+        var dto = Deserialize<GameActionDto>(message);
 
         return new ActionSelectedCommand(dto);
     }

@@ -12,7 +12,10 @@ public class PlayerAddedCommand : GameCommand
     }
     public override async Task Execute()
     {
-        //add Player To ui
+
+        //player.playerDto = dto;
+
+        //Board.Instance.RegisterPlayer(player);
         await Task.CompletedTask;
     }
 }
