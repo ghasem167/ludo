@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class Cell : ActionSelectable
@@ -8,5 +9,13 @@ public class Cell : ActionSelectable
     protected override void OnSelectableChanged(bool selectable)
     {
         // Highlight Cell
+    }
+    public async Task ActiveAsSafe()
+    {
+        
+    }
+    public async Task ActiveAsPenalty()
+    {
+        
     }
 }

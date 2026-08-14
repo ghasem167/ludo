@@ -17,11 +17,11 @@ export class MatchLabel {
     static fromJson(json: string): MatchLabel {
         return Object.assign(new MatchLabel(), JSON.parse(json));
     }
-    update(dispatcher: nkruntime.MatchDispatcher) {
+   /* update(dispatcher: nkruntime.MatchDispatcher) {
         dispatcher.matchLabelUpdate(
             JSON.stringify(this)
         );
-    }
+    }*/
     static compare(a: string, b: string): number {
 
         const la = MatchLabel.fromJson(a);

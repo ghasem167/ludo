@@ -29,6 +29,7 @@ export enum ServerOpCode {
     TurnStarted,
     RollDiceResult,
     AvailableActions,
+    NoValidMove,
     ActionExecuted,
     BoardUpdated,
     PlayerFinish,

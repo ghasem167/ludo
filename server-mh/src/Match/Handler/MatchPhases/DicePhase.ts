@@ -1,11 +1,10 @@
 
-import { ClientOpCode, Phase, ServerOpCode } from "../Enums";
 import { DICE_BOT_TIMEOUT_SECONDS, DICE_HUMAN_TIMEOUT_SECONDS, MATCH_TICK_RATE } from "../Consts";
 import { MatchContext } from "../Models/MatchContex";
 import { PhaseBase } from "./PhaseBase";
 import { Player } from "../Models/Player";
 import { RuleEngine } from "../Models/RuleEngine";
-
+import { ClientOpCode, Phase } from "../Enums";
 export class DicePhase extends PhaseBase {
 
 
@@ -52,7 +51,7 @@ export class DicePhase extends PhaseBase {
         context.state.availableActions=rule.availableActions;
         if (rule.availableActions.length == 0) {
             if (!this.HasPlayerPieceOnBoard(context)) {
-                context.dispatcher.broadcastMessage(ServerOpCode.AvailableActions, "no valid move");
+                context.broadcaster.NoValidMove();
                 if (context.state.turnState.repeat <= 2) {
                     context.state.turnState.anotherChance = true;
                     context.state.pendingPhase = Phase.Turn;
@@ -60,7 +59,7 @@ export class DicePhase extends PhaseBase {
                 }
             }
             else {
-
+                context.broadcaster.AvailableActions(context.state.availableActions,context.state.players[context.state.turnState.currentPlayer])
                 context.state.pendingPhase=Phase.Action;
                 return;
                
@@ -69,8 +68,8 @@ export class DicePhase extends PhaseBase {
 
         }
 
-        const message = "turn: " + context.state.turnState.currentPlayer;
-        context.dispatcher.broadcastMessage(ServerOpCode.TurnStarted, JSON.stringify(message));
+        
+        context.broadcaster.TurnStarted(context.state.turnState.currentPlayer);
         context.state.diceState.waitingForRoll = true;
 
     }
@@ -78,12 +77,10 @@ export class DicePhase extends PhaseBase {
 
     private Roll(context: MatchContext, player: Player): void {
         // TODO: send roll request or trigger dice logic
-        context.state.diceState.diceValue = Math.floor(Math.random() * 6) + 1;
+        const diceValue=Math.floor(Math.random() * 6) + 1;
+        context.state.diceState.diceValue = diceValue;
         context.state.diceState.waitingForRoll = false;
-        context.dispatcher.broadcastMessage(ServerOpCode.RollDiceResult, JSON.stringify({
-            playerColor: player.color,
-            diceValue: context.state.diceState.diceValue
-        }));
+        context.broadcaster.RollDiceResult(player,diceValue);
         context.state.diceState.waitingForRoll = false;
 
     }

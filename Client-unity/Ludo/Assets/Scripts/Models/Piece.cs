@@ -12,6 +12,11 @@ public class Piece : ActionSelectable
     {
         // Highlight Piece
     }
+    public async Task Spawn(Cell startCell)
+    {
+        
+        await MoveToPosition(startCell.centerPosition);
+    }
     private async Task MoveToPosition(Vector3 targetPosition)
     {
         Vector3 startPosition = transform.position;
@@ -39,10 +44,16 @@ public class Piece : ActionSelectable
     }
     public async Task MoveAlong(IReadOnlyList<Cell> path)
     {
+        if (path == null || path.Count == 0)
+            return;
+
         foreach (Cell cell in path)
         {
             await MoveToPosition(cell.centerPosition);
             _currentCell = cell;
         }
+
+        // اطمینان از قرار گرفتن دقیق روی آخرین سلول
+        transform.position = path[^1].centerPosition;
     }
 }
