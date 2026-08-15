@@ -8,6 +8,7 @@ export class StartPhase extends PhaseBase {
 
     public override Start(context: MatchContext): void {
         context.state.tickCounter = START_DELAY_SECONDS * MATCH_TICK_RATE;
+        context.broadcaster.LobbyStarted("Lobby Started");
     }
     public override Update(context: MatchContext): void {
 
@@ -16,7 +17,7 @@ export class StartPhase extends PhaseBase {
             context.logger.info(`Match started with ${context.state.players.length} players.players: ${context.state.players.map((p: Player) => p.userName).join(", ")}`);
             context.state.matchStarted = true;
             context.state.label.matchStarted = true;
-            context.state.label.update(context.dispatcher);
+            context.broadcaster.MatchStarted("Match Started");
             context.state.pendingPhase = Phase.Turn;
             return;
         }

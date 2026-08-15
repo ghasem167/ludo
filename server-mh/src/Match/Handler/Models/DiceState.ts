@@ -1,16 +1,15 @@
 
 export class DiceState {
-    public waitingForRoll: boolean;
+    public waitingForInput: boolean;
+    public waitingForAnimation:boolean;
     public diceValue: number;
     public waitingForActionSelect: boolean;
 
     constructor(
-        waitingForRoll: boolean = false,
-        diceValue: number = 0,
-        waitingForActionSelect: boolean = false
     ) {
-        this.waitingForRoll = waitingForRoll;
-        this.diceValue = diceValue;
-        this.waitingForActionSelect = waitingForActionSelect;
+        this.waitingForInput = false;
+        this.waitingForAnimation=false;
+        this.diceValue = 0;
+        this.waitingForActionSelect = false;
     }
 }

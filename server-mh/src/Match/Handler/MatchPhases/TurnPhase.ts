@@ -31,7 +31,7 @@ export class TurnPhase extends PhaseBase {
         if (!(context.state.players[turnState.currentPlayer].playerState.lights > 0)) {
             this.FirePlayer(context.state.players, turnState.currentPlayer);
         }
-
+        context.broadcaster.TurnStarted(turnState.currentPlayer);
         context.state.pendingPhase = Phase.Dice;
 
 

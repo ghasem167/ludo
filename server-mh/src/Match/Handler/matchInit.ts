@@ -48,7 +48,7 @@ export function matchInit(
 	const mState = new MatchState(false, board,
 		matchConfig,
 		new TurnState(PlayerColor.Blue, false, false, false, false, 0),
-		new DiceState(false, 0, false), players);
+		new DiceState(), players);
 	mState.label=new MatchLabel(matchConfig.mode, matchConfig.team);
 	return {
 		state: mState,

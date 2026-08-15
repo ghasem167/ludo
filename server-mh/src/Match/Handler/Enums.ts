@@ -5,12 +5,12 @@ export enum PlayerColor {
     Green = 3
 }
 export enum Phase {
-    Start=0,
+    Start = 0,
     Turn = 1,
     Dice = 2,
     Action = 3,
     Resolution = 4,
-    Finish=5
+    Finish = 5
 }
 export enum GameMode {
     Modern = 0,
@@ -25,15 +25,26 @@ export enum ClientOpCode {
     SelectAction = 1
 }
 export enum ServerOpCode {
+
+    LobbyStarted,
+
+    PlayerAdded,
+    Players,
+
     MatchStarted,
+
     TurnStarted,
-    RollDiceResult,
+
+    DiceValue,
+    LightsChanged,
+
     AvailableActions,
-    NoValidMove,
-    ActionExecuted,
-    BoardUpdated,
+
+    NewAction,
+
     PlayerFinish,
-    GameEnded
+
+    MatchFinish
 }
 export enum ActionType {
     SpawnAction = 0,
