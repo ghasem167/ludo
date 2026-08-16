@@ -2,12 +2,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
-public class MatchFinishedCommand:GameCommand
+public class MatchFinishedCommand : GameCommand
 {
-    
-      public override async Task Execute()
+    private readonly List<PlayerColor> _winnerList;
+
+    public MatchFinishedCommand(List<PlayerColor> winnerList)
     {
-        //add Player To ui
+        _winnerList = winnerList;
+    }
+
+    public override async Task Execute()
+    {
+        // Show match result
         await Task.CompletedTask;
     }
 }

@@ -3,17 +3,20 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
-public class TurnStartedCommand:GameCommand
+public class TurnStartedCommand : GameCommand
 {
-    PlayerDto playerInTurn;
-    public TurnStartedCommand(TurnStartedDto dto)
+    private readonly PlayerColor _playerColor;
+
+    public TurnStartedCommand(PlayerColor playerColor)
     {
-        playerInTurn = dto.Player;
+        _playerColor = playerColor;
     }
-      public override async Task Execute()
+
+    public override async Task Execute()
     {
-        GameManager.Instance.lastContext.CurrentPlayer=playerInTurn.Color;
-        
+        // Update current turn
+        // Show turn UI / effects
+
         await Task.CompletedTask;
     }
 }

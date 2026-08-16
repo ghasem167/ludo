@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
-public class LightChangedDto
+public class LightsChangedDto
 {
-    public PlayerDto Player;
+    public PlayerColor Player;
     public int numOfLights;
 
 }

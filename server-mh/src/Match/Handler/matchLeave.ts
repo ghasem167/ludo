@@ -35,7 +35,7 @@ export function matchLeave(
 			);
 		}
 		mState.label.presentPlayerCount--;
-		mState.label.update(dispatcher);
+		
 	}
 
 	// اگر هیچ بازیکن انسانی باقی نمانده باشد، مچ را خاتمه بده

@@ -1,18 +1,19 @@
-
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-
-public class LobbyStartedCommand : GameCommand
+public class PlayersCommand : GameCommand
 {
-    private List<PlayerDto> _players;
-    public LobbyStartedCommand(List<PlayerDto> players)
+    private readonly List<PlayerDto> _players;
+
+    public PlayersCommand(List<PlayerDto> players)
     {
         _players = players;
     }
+
     public override async Task Execute()
     {
-        //Start Show Lobby Page
+        // Register players
+
         await Task.CompletedTask;
     }
 }

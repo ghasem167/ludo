@@ -2,19 +2,23 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
-public class LightChangedCommand:GameCommand
+public class LightsChangedCommand : GameCommand
 {
-    
-    public PlayerDto Player;
-    public int numOfLights;
-    public LightChangedCommand(LightChangedDto dto)
+    private readonly PlayerColor _playerColor;
+    private readonly int _lights;
+
+    public LightsChangedCommand(
+        PlayerColor playerColor,
+        int lights)
     {
-        Player = dto.Player;
-        numOfLights = dto.numOfLights;
+        _playerColor = playerColor;
+        _lights = lights;
     }
-      public override async Task Execute()
+
+    public override async Task Execute()
     {
-        //add Player To ui
+        // Update player's lights
+
         await Task.CompletedTask;
     }
 }

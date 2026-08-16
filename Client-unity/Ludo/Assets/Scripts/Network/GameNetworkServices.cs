@@ -74,11 +74,13 @@ public class GameNetworkServices
                 return BuildLobbyStarted(message);
             case opcode.PlayerAdded:
                 return BuildPlayerAdded(message);
+            case opcode.Players:
+                return BuildPlayers(message);
             case opcode.MatchStarted:
-                return BuildMatchStarted(message);
+                return new MatchStartedCommand();
             case opcode.MatchFinished:
                 return BuildMatchFinished(message);
-            case opcode.LightChanged:
+            case opcode.LightsChanged:
                 return BuildLightChanged(message);
             case opcode.TurnStarted:
                 return BuildTurnStartedCommand(message);
@@ -90,7 +92,7 @@ public class GameNetworkServices
                 return BuildPlayerFinishedCommand(message);
             case opcode.MatchState:
                 return BuildMatchStateCommand(message);
-                
+
 
             default:
                 throw new NotImplementedException();
@@ -108,6 +110,12 @@ public class GameNetworkServices
 
         return new PlayerAddedCommand(dto);
     }
+    private GameCommand BuildPlayers(IMatchState message)
+    {
+        var dto = Deserialize<PlayersDto>(message);
+
+        return new PlayersCommand(dto.Players);
+    }
     private GameCommand BuildMatchStarted(IMatchState message)
     {
         var dto = Deserialize<MatchStartedDto>(message);
@@ -118,21 +126,25 @@ public class GameNetworkServices
     {
         var dto = Deserialize<MatchFinishedDto>(message);
 
-        return new MatchFinishedCommand();
+        return new MatchFinishedCommand(dto.WinnerList);
     }
-    private GameCommand BuildLightChanged(IMatchState message)
-    {
-        var dto = Deserialize<LightChangedDto>(message);
-
-        return new LightChangedCommand(dto);
-    }
-
-    private GameCommand BuildTurnStartedCommand(IMatchState message)
-    {
-        var dto = Deserialize<TurnStartedDto>(message);
+    private GameCommand BuildLightsChangedCommand(IMatchState message)
+{
+    var dto = Deserialize<LightsChangedDto>(message);
+       return new LightsChangedCommand(
+        dto.Player,
+        dto.numOfLights
+    );
         
-        return new TurnStartedCommand(dto);
-    }
+    
+}
+
+   private GameCommand BuildTurnStartedCommand(IMatchState message)
+{
+    var dto = Deserialize<TurnStartedDto>(message);
+
+    return new TurnStartedCommand(dto.PlayerColor);
+}
 
     private GameCommand BuildDiceRolledCommand(IMatchState message)
     {
@@ -162,7 +174,7 @@ public class GameNetworkServices
         return new MatchStateCommand(dto);
     }
 
-   
+
 
 
 

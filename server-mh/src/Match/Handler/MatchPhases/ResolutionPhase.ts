@@ -1,7 +1,5 @@
-import { Phase, PlayerColor } from "../Enums";
+import { Phase } from "../Enums";
 import { MatchContext } from "../Models/MatchContex";
-import { GameAction } from "../Actions/GameAction";
-import { ServerOpCode } from "../Enums";
 import { PhaseBase } from "./PhaseBase";
 
 export class ResolutionPhase extends PhaseBase {
@@ -14,12 +12,14 @@ export class ResolutionPhase extends PhaseBase {
             context.state.availableActions![context.state.selectedAction];
 
         action.Apply(context);
-
-        let player = context.state.players[context.state.turnState.currentPlayer];
         
         context.state.version++;
 
-        this.BroadcastAction(context.state.version,player.color, action,context.dispatcher);
+        context.broadcaster.NewAction(
+            context.state.version,
+            context.state.turnState.currentPlayer,
+            action
+        )
 
         context.state.availableActions = undefined;
         context.state.selectedAction = -1;
@@ -32,24 +32,4 @@ export class ResolutionPhase extends PhaseBase {
     }
 
 
-    private BroadcastAction(
-        version: number,
-        player: PlayerColor,
-        action: GameAction,
-        dispatcher: nkruntime.MatchDispatcher
-
-    ): void {
-
-        const packet = JSON.stringify({
-            version: version,
-            actingPlayer: player,
-            action: action.ToObject(),
-            result: action.result.ToObject()
-        });
-
-        dispatcher.broadcastMessage(
-            ServerOpCode.ActionExecuted,
-            packet
-        );
-    }
 }

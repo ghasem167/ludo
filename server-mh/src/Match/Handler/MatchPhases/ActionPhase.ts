@@ -1,9 +1,7 @@
 import { PhaseBase } from "./PhaseBase";
 import { MatchContext } from "../Models/MatchContex";
-import { ServerOpCode, ClientOpCode, Phase } from "../Enums";
 import { ACTIONSELECT_BOT_TIMEOUT_SECONDS,MATCH_TICK_RATE,ACTIONSELECT_HUMAN_TIMEOUT_SECONDS } from "../Consts";
-import { Player } from "../Models/Player";
-import { GameAction } from "../Actions/GameAction";
+import { ClientOpCode, Phase } from "../Enums";
 export class ActionPhase extends PhaseBase {
 
     public override Start(context: MatchContext): void {
@@ -11,7 +9,7 @@ export class ActionPhase extends PhaseBase {
         const currentPlayer =
             context.state.players[context.state.turnState.currentPlayer];
 
-        context.state.diceState.waitingForActionSelect = false;
+        context.state.diceState.waitingForActionSelect = true;
 
         context.state.tickCounter = currentPlayer.playerState.isBot
             ? ACTIONSELECT_BOT_TIMEOUT_SECONDS * MATCH_TICK_RATE
@@ -20,19 +18,7 @@ export class ActionPhase extends PhaseBase {
 
     public override Update(context: MatchContext): void {
 
-        const currentPlayer =
-            context.state.players[context.state.turnState.currentPlayer];
-
-        if (!context.state.diceState.waitingForActionSelect) {
-
-            if (!currentPlayer.playerState.isBot) {
-                this.SendAvailableActions(context, currentPlayer);
-            }
-
-            context.state.diceState.waitingForActionSelect = true;
-            return;
-        }
-
+       
         context.state.tickCounter--;
 
         if (context.state.tickCounter <= 0) {
@@ -45,24 +31,7 @@ export class ActionPhase extends PhaseBase {
         }
     }
 
-    private SendAvailableActions(
-        context: MatchContext,
-        player: Player
-    ): void {
-
-        if (!player.presence)
-            return;
-
-        const packet = JSON.stringify(
-            context.state.availableActions!.map((a: GameAction) => a.ToObject())
-        );
-
-        context.dispatcher.broadcastMessage(
-            ServerOpCode.AvailableActions,
-            packet,
-            [player.presence]
-        );
-    }
+  
 
     private HandleSelectAction(context: MatchContext): boolean {
 

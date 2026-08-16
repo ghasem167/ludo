@@ -73,11 +73,15 @@ export class MatchBroadcaster {
     }
 
 
-    public MatchFinish(message: unknown): void {
+    public MatchFinish(winnerList: PlayerColor[]): void {
+
+        const packet = JSON.stringify({
+            winnerList
+        });
 
         this.dispatcher.broadcastMessage(
             ServerOpCode.MatchFinish,
-            JSON.stringify(message)
+            packet
         );
     }
 
@@ -142,17 +146,28 @@ export class MatchBroadcaster {
         this.dispatcher.broadcastMessage(
             ServerOpCode.LightsChanged,
             JSON.stringify({
+                playerColor:player.color,
                 lights: player.playerState.lights
-            }),
-            [player.presence]
+            })
         );
     }
 
-    public NewAction(message: unknown): void {
+    public NewAction(
+        version: number,
+        player: PlayerColor,
+        action: GameAction
+    ): void {
+
+        const packet = JSON.stringify({
+            version: version,
+            actingPlayer: player,
+            action: action.ToObject(),
+            result: action.result.ToObject()
+        });
 
         this.dispatcher.broadcastMessage(
             ServerOpCode.NewAction,
-            JSON.stringify(message)
+            packet
         );
     }
 

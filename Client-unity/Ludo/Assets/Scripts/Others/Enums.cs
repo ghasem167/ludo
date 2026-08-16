@@ -11,16 +11,27 @@ public enum PlayMode
     Offline
 }
 public enum opcode
-{ LobbyStarted,
- PlayerAdded,
- MatchStarted,
- TurnStarted, 
- LightChanged, 
- DiceRolled, 
- ActionSelected, 
- PlayerFinished,
- MatchFinished, 
- MatchState  }
+{
+    LobbyStarted,
+
+    PlayerAdded,
+    Players,
+
+    MatchStarted,
+
+    TurnStarted,
+
+    DiceValue,
+    LightsChanged,
+
+    AvailableActions,
+
+    NewAction,
+
+    PlayerFinished,
+
+    MatchFinished
+}
 
 public enum PlayerColor
 {
