@@ -19,7 +19,7 @@ function InitModule(
     // REGISTER RPC
     // =========================
 
-    initializer.registerRpc("FindOrCreateGame", FindOrCreateGame);
+    initializer.registerRpc("FindOrCreateMatch", FindOrCreateMatch);
 
     // =========================
     // MATCH HANDLER
@@ -59,7 +59,7 @@ function InitModule(
 
 
 
-function FindOrCreateGame(
+function FindOrCreateMatch(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
     nk: nkruntime.Nakama,

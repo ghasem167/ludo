@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 879b34b21108fcc42aabf7a375310587, type: 3}
+  m_Name: Catalog
+  m_EditorClassIdentifier: Assembly-CSharp::AssetCatalog
+  Pieces:
+  - {fileID: 11400000, guid: 82b3022b54a39b64c85eceaa66224e6c, type: 2}
+  Dices:
+  - {fileID: 11400000, guid: e1757c28a64d84c42922d36d251bb96a, type: 2}
+  BoardSkins:
+  - {fileID: 11400000, guid: 54d3927b3a994874eb82a1fbd5b725a8, type: 2}

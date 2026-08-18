@@ -1,5 +1,23 @@
 {
     "files.exclude": {
+      
+
+        "**/Materials":true,
+       // "**/Models":true,
+        "**/Library": true,
+        "**/Scenes":true,
+        "**/Settings":true,
+        "**/SkyBoxes":true,
+        "**/Textures":true,
+        "**/TutorialInfo":true,
+        "**/Packages":true,
+        "**/*.slnx":true,
+        "**/obj": true,
+        "**/Temp": true,
+        "**/Logs": true,
+        "**/Build": true,
+        "**/UserSettings": true,
+        "**/node_modules": true,
         "**/.DS_Store": true,
         "**/.git": true,
         "**/.vs": true,

@@ -85,7 +85,33 @@ export class MatchBroadcaster {
         );
     }
 
+    public PiecesPosition(players: Player[]): void {
 
+        const pieces: {
+            playerColor: PlayerColor;
+            pieceId: number;
+            cellIndex: number;
+        }[] = [];
+
+        for (const player of players) {
+
+            if (player.playerState.isBot)
+                continue;
+
+            for (const piece of player.pieces) {
+                pieces.push({
+                    playerColor: player.color,
+                    pieceId: piece.id,
+                    cellIndex: piece.currentCell.index
+                });
+            }
+        }
+
+        this.dispatcher.broadcastMessage(
+            ServerOpCode.PiecesPosition,
+            JSON.stringify(pieces)
+        );
+    }
     // ─────────────────────────────
     // Turn
     // ─────────────────────────────
@@ -146,7 +172,7 @@ export class MatchBroadcaster {
         this.dispatcher.broadcastMessage(
             ServerOpCode.LightsChanged,
             JSON.stringify({
-                playerColor:player.color,
+                playerColor: player.color,
                 lights: player.playerState.lights
             })
         );
@@ -176,11 +202,10 @@ export class MatchBroadcaster {
     // Player
     // ─────────────────────────────
 
-    public PlayerFinish(message: unknown): void {
+    public PlayerFinish(): void {
 
         this.dispatcher.broadcastMessage(
-            ServerOpCode.PlayerFinish,
-            JSON.stringify(message)
+            ServerOpCode.PlayerFinish
         );
     }
 }

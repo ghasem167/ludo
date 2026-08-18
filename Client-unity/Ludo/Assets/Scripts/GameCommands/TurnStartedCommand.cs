@@ -16,7 +16,7 @@ public class TurnStartedCommand : GameCommand
     {
         // Update current turn
         // Show turn UI / effects
-
+        GameManager.Instance.LastContext.CurrentPlayer=_playerColor;
         await Task.CompletedTask;
     }
 }

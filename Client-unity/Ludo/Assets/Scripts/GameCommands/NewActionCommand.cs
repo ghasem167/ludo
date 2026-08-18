@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
-public class ActionSelectedCommand : GameCommand
+public class NewActionCommand : GameCommand
 {
     GameActionDto selectedAction;
-    public ActionSelectedCommand(GameActionDto gameActionDto)
+    public NewActionCommand(GameActionDto gameActionDto)
     {
         selectedAction = gameActionDto;
     }

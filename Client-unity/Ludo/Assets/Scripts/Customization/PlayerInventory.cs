@@ -6,8 +6,9 @@ public class PlayerInventory
 
     public List<string> OwnedDices;
 
-    public List<string> OwnedBoards;
+    public List<string> OwnedBoardSkins;
 
+   
     private void SaveLocal()
     {
         

@@ -1,28 +1,60 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 public class Board : MonoBehaviour
 {
 
-    public Cell[] cells;
+    [SerializeField]
+    private Cell[] cells;
+
+    public Cell[] Cells => cells;
     public Player[] players;
 
     public Dice dice;
-    private Dictionary<int, Cell> _cellMap;
+
+    [Header("Cell Editor")]
+    public float planeHeightOffset = 0f;
+    public float planeSize = 10f;
+
+    [SerializeField]
+    private Transform logicalBoard;
+
+    public Transform LogicalBoard => logicalBoard;
+
+
+#if UNITY_EDITOR
+
+    public void AddCell(Cell cell)
+    {
+        var list = new System.Collections.Generic.List<Cell>(
+            cells ?? Array.Empty<Cell>()
+        );
+
+        list.Add(cell);
+        cells = list.ToArray();
+    }
+
+    public void SetCells(Cell[] value)
+    {
+        cells = value;
+    }
+
+    public void SetLogicalBoard(Transform value)
+    {
+        logicalBoard = value;
+    }
+
+#endif
     private void Awake()
     {
 
-        _cellMap = new Dictionary<int, Cell>();
-
-        foreach (Cell cell in cells)
-        {
-            _cellMap.Add(cell.index, cell);
-        }
+       
 
     }
     public Cell GetCell(int index)
     {
-        _cellMap.TryGetValue(index, out Cell cell);
-        return cell;
+        
+        return cells[index];
     }
     public Piece GetPiece(PlayerColor color, int pieceIndex)
     {

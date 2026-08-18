@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -11,7 +12,8 @@ public class GameManager : MonoBehaviour
     public GameContext LastContext { get; private set; }
     public PlayMode PlayMode { get; set; }
 
-    public GameAssets GameAssets{get;set;}
+    
+    public GameAssets GameAssets;
     public BoardFactory BoardFactory{get;set;}
 
 

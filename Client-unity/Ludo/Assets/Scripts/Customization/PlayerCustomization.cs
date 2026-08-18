@@ -4,7 +4,7 @@ public class PlayerCustomization
 
     public string SelectedDiceId;
 
-    public string SelectedBoardId;
+    public string SelectedBoardSkinId;
 
     private void SaveLocal()
     {

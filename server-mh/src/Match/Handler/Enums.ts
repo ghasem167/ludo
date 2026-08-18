@@ -32,6 +32,7 @@ export enum ServerOpCode {
     Players,
 
     MatchStarted,
+    PiecesPosition,
 
     TurnStarted,
 

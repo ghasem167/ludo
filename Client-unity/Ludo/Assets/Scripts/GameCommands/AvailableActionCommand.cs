@@ -2,21 +2,21 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
-public class DiceRolledCommand : GameCommand
+public class AvailableActionCommand : GameCommand
 {
-    public DiceRolledDto diceRolled;
-    public DiceRolledCommand(DiceRolledDto dto)
+    public AvailableActionDto availableActionDto;
+    public AvailableActionCommand(AvailableActionDto dto)
     {
-        diceRolled = dto;
+        availableActionDto = dto;
     }
 
 
     public override Task Execute()
     {
 
-        for (int i = 0; i < diceRolled.AvailableActions.Count; i++)
+        for (int i = 0; i < availableActionDto.AvailableActions.Count; i++)
         {
-            var action = diceRolled.AvailableActions[i];
+            var action = availableActionDto.AvailableActions[i];
             ActionSelectable obj = null;
 
             switch (action.Type)
@@ -25,7 +25,7 @@ public class DiceRolledCommand : GameCommand
                 case GameActionType.Spawn:
 
                     obj = GameManager.Instance.BoardFactory.Board.GetPiece(
-                        diceRolled.colorInTurn,
+                        GameManager.Instance.LastContext.CurrentPlayer,
                         action.PieceIndex
                     );
 

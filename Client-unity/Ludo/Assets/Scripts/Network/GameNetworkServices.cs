@@ -1,6 +1,7 @@
 using Nakama;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
@@ -78,25 +79,51 @@ public class GameNetworkServices
                 return BuildPlayers(message);
             case opcode.MatchStarted:
                 return new MatchStartedCommand();
-            case opcode.MatchFinished:
-                return BuildMatchFinished(message);
+            case opcode.PiecesPosition:
+                return BuildPiecePositionOnBoardCommand(message);
             case opcode.LightsChanged:
-                return BuildLightChanged(message);
+                return BuildLightsChanged(message);
             case opcode.TurnStarted:
                 return BuildTurnStartedCommand(message);
-            case opcode.DiceRolled:
-                return BuildDiceRolledCommand(message);
-            case opcode.ActionSelected:
-                return BuildActionSelectedCommand(message);
+            case opcode.DiceValue:
+                return BuildDiceValueCommand(message);
+            case opcode.AvailableActions:
+                return BuildAvailableActionCommand(message);
+            case opcode.NewAction:
+                return BuildNewActionCommand(message);
             case opcode.PlayerFinished:
-                return BuildPlayerFinishedCommand(message);
-            case opcode.MatchState:
-                return BuildMatchStateCommand(message);
+                return new PlayerFinishedCommand();
+            case opcode.MatchFinished:
+                return BuildMatchFinished(message);
+
 
 
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    public async Task<FindOrCreateMatchResult> FindOrCreateMatch(
+    string matchId,
+    TeamMode teamMode,
+    GameMode gameMode)
+    {
+        var payload = new
+        {
+            matchId = matchId,
+            teamMode = (int)teamMode,
+            gameMode = (int)gameMode
+        };
+
+        var response = await _client.RpcAsync(
+            _session,
+            "FindOrCreateGame",
+            JsonConvert.SerializeObject(payload)
+        );
+
+        return JsonConvert.DeserializeObject<FindOrCreateMatchResult>(
+            response.Payload
+        );
     }
     private GameCommand BuildLobbyStarted(IMatchState message)
     {
@@ -122,61 +149,59 @@ public class GameNetworkServices
 
         return new MatchStartedCommand();
     }
+    private GameCommand BuildPiecePositionOnBoardCommand(IMatchState message)
+    {
+        var dto = Deserialize<List<PiecePositionDto>>(message);
+        return new PiecesPositionCommand(dto);
+
+    }
     private GameCommand BuildMatchFinished(IMatchState message)
     {
         var dto = Deserialize<MatchFinishedDto>(message);
 
         return new MatchFinishedCommand(dto.WinnerList);
     }
-    private GameCommand BuildLightsChangedCommand(IMatchState message)
-{
-    var dto = Deserialize<LightsChangedDto>(message);
-       return new LightsChangedCommand(
-        dto.Player,
-        dto.numOfLights
-    );
-        
-    
-}
-
-   private GameCommand BuildTurnStartedCommand(IMatchState message)
-{
-    var dto = Deserialize<TurnStartedDto>(message);
-
-    return new TurnStartedCommand(dto.PlayerColor);
-}
-
-    private GameCommand BuildDiceRolledCommand(IMatchState message)
+    private GameCommand BuildLightsChanged(IMatchState message)
     {
-        var dto = Deserialize<DiceRolledDto>(message);
+        var dto = Deserialize<LightsChangedDto>(message);
+        return new LightsChangedCommand(
+         dto.Player,
+         dto.numOfLights
+     );
 
-        return new DiceRolledCommand(dto);
+
     }
 
-    private GameCommand BuildActionSelectedCommand(IMatchState message)
+    private GameCommand BuildTurnStartedCommand(IMatchState message)
+    {
+        var dto = Deserialize<TurnStartedDto>(message);
+
+        return new TurnStartedCommand(dto.PlayerColor);
+    }
+
+    private GameCommand BuildDiceValueCommand(IMatchState message)
+    {
+        var dto = Deserialize<DiceValueDto>(message);
+
+        return new DiceValueCommand(
+            dto.diceValue
+        );
+    }
+    private GameCommand BuildAvailableActionCommand(IMatchState message)
+    {
+        var dto = Deserialize<AvailableActionDto>(message);
+
+        return new AvailableActionCommand(
+            dto
+        );
+    }
+
+    private GameCommand BuildNewActionCommand(IMatchState message)
     {
         var dto = Deserialize<GameActionDto>(message);
 
-        return new ActionSelectedCommand(dto);
+        return new NewActionCommand(dto);
     }
-
-    private GameCommand BuildPlayerFinishedCommand(IMatchState message)
-    {
-        var dto = Deserialize<PlayerFinishedDto>(message);
-
-        return new PlayerFinishedCommand(dto);
-    }
-
-    private GameCommand BuildMatchStateCommand(IMatchState message)
-    {
-        var dto = Deserialize<MatchStateDto>(message);
-
-        return new MatchStateCommand(dto);
-    }
-
-
-
-
 
 
 

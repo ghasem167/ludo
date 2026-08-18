@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 
-public class DiceRolledDto
+public class AvailableActionDto
 {
-    public int diceValue;
-    public PlayerColor colorInTurn;
     public List<GameActionDto> AvailableActions;
 
    

@@ -18,6 +18,8 @@ public enum opcode
     Players,
 
     MatchStarted,
+    
+    PiecesPosition,
 
     TurnStarted,
 
@@ -46,4 +48,12 @@ public enum GameActionType
     Spawn,
     ActivateSafeCell,
     ActivatePenaltyCell
+}
+public enum GameMode {
+    Modern = 0,
+    Classic = 1
+}
+public enum TeamMode {
+    None = 0,
+    TwoVsTwo = 1
 }

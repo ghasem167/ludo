@@ -7,5 +7,5 @@ public class AssetCatalog : ScriptableObject
 
     public DiceItem[] Dices;
 
-    public BoardItem[] Boards;
+    public BoardSkinItem[] BoardSkins;
 }

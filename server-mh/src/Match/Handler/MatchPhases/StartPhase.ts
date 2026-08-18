@@ -18,6 +18,7 @@ export class StartPhase extends PhaseBase {
             context.state.matchStarted = true;
             context.state.label.matchStarted = true;
             context.broadcaster.MatchStarted("Match Started");
+            context.broadcaster.PiecesPosition(context.state.players);
             context.state.pendingPhase = Phase.Turn;
             return;
         }

@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "server-mh"
+		},
+		{
+			"path": "Client-unity/Ludo"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"*.asset": "yaml",
+			"*.meta": "yaml",
+			"*.prefab": "yaml",
+			"*.unity": "yaml"
+		},
+		"dotnet.defaultSolution": "Ludo.slnx"
+	}
+}

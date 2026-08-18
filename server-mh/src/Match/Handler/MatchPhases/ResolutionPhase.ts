@@ -23,7 +23,10 @@ export class ResolutionPhase extends PhaseBase {
 
         context.state.availableActions = undefined;
         context.state.selectedAction = -1;
-
+        if(context.state.players[context.state.turnState.currentPlayer].playerState.isFinished)
+        {
+            context.broadcaster.PlayerFinish();
+        }
         if (context.state.matchFinish)
             context.state.pendingPhase = Phase.Finish;
         else
