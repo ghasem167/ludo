@@ -2,6 +2,7 @@ using Nakama;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
@@ -13,6 +14,21 @@ public class GameNetworkServices
     private ISocket _socket;
     private ISession _session;
     private CommandHandler commandHandler;
+    public bool IsOnline
+    {
+        get
+        {
+            return _client != null &&
+                   _session != null &&
+                   _socket != null &&
+                   _socket.IsConnected;
+        }
+    }
+    public bool IsAuthenticated =>
+    _client != null && _session != null;
+
+    public bool IsConnected =>
+        _socket != null && _socket.IsConnected;
     public GameNetworkServices()
     {
         commandHandler = new CommandHandler();
@@ -65,6 +81,27 @@ public class GameNetworkServices
     {
         Debug.Log("Match Presence Event Received");
         // Handle match presence events here
+    }
+    public async Task<string> ReadInventoryAsync()
+    {
+        var result = await _client.ReadStorageObjectsAsync(
+            _session,
+            new IApiReadStorageObjectId[]
+            {
+            new StorageObjectId
+            {
+                Collection = "player",
+                Key = "inventory",
+                UserId = _session.UserId
+            }
+            });
+
+        foreach (var obj in result.Objects)
+        {
+            return obj.Value;
+        }
+
+        return null;
     }
     public GameCommand Interpret(IMatchState message)
     {
@@ -209,5 +246,25 @@ public class GameNetworkServices
     {
         string json = Encoding.UTF8.GetString(message.State);
         return JsonConvert.DeserializeObject<T>(json);
+    }
+    public async Task<string> BuyAssetAsync(string assetId)
+    {
+        var payload = new
+        {
+            assetId = assetId
+        };
+
+        string json = JsonUtility.ToJson(
+            new BuyAssetRequest
+            {
+                AssetId = assetId
+            });
+
+        var response = await _client.RpcAsync(
+            _session,
+            "buy_asset",
+            json);
+
+        return response.Payload;
     }
 }

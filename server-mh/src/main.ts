@@ -7,6 +7,7 @@ import { matchTerminate } from "./Match/Handler/matchTerminate";
 import { matchSignal } from "./Match/Handler/matchSignal";
 import { GameMode, TeamMode } from "./Match/Handler/Enums";
 import { MatchLabel } from "./Match/Handler/MatchLabel";
+import { BuyAssetRpc } from "./RPC/inventory";
 function InitModule(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
@@ -20,6 +21,10 @@ function InitModule(
     // =========================
 
     initializer.registerRpc("FindOrCreateMatch", FindOrCreateMatch);
+    initializer.registerRpc(
+        "buy_asset",
+        BuyAssetRpc
+    );
 
     // =========================
     // MATCH HANDLER

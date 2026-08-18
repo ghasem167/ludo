@@ -7,27 +7,12 @@ public class GameAssets
     public PlayerCustomization Customization { get; set; }
     public PlayerInventory Inventory { get; set; }
 
-    public GameAssets()
+    public GameAssets(GameNetworkServices networkServices)
     {
         Customization = new PlayerCustomization();
-        Inventory = new PlayerInventory();
-        foreach (var c in catalog.Pieces)
-        {
-            if (c.Price == 0)
-                Inventory.OwnedPieces.Add("0");
-        }
-        foreach (var c in catalog.Dices)
-        {
-            if (c.Price == 0)
-                Inventory.OwnedDices.Add("0");
-        }
-        foreach (var c in catalog.BoardSkins)
-        {
-            if (c.Price == 0)
-                Inventory.OwnedBoardSkins.Add("0");
-        }
-        Customization.SelectedPieceId=Inventory.OwnedPieces[0];
-        Customization.SelectedBoardSkinId=Inventory.OwnedBoardSkins[0];
-        Customization.SelectedDiceId=Inventory.OwnedDices[0];
+        Inventory = new PlayerInventory(networkServices,catalog);
+        
+        
+        
     }
 }
