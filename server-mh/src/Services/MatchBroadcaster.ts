@@ -1,5 +1,7 @@
+import { GameActionData } from "../Match/Handler/Actions/Datas";
 import { GameAction } from "../Match/Handler/Actions/GameAction";
 import { PlayerColor, ServerOpCode } from "../Match/Handler/Enums";
+import { Piece } from "../Match/Handler/Models/Piece";
 import { Player } from "../Match/Handler/Models/Player";
 
 export class MatchBroadcaster {
@@ -21,8 +23,7 @@ export class MatchBroadcaster {
     }
 
 
-    public PlayerAdded(player: Player,
-        recipients: nkruntime.Presence[]): void {
+    public PlayerAdded(player: Player): void {
 
         const message: PlayerAddedMessage = {
             player: {
@@ -34,8 +35,8 @@ export class MatchBroadcaster {
 
         this.dispatcher.broadcastMessage(
             ServerOpCode.PlayerAdded,
-            JSON.stringify(message),
-            recipients
+            JSON.stringify(message)
+
         );
     }
 
@@ -95,14 +96,12 @@ export class MatchBroadcaster {
 
         for (const player of players) {
 
-            if (player.playerState.isBot)
-                continue;
 
             for (const piece of player.pieces) {
                 pieces.push({
                     playerColor: player.color,
                     pieceId: piece.id,
-                    cellIndex: piece.currentCell.index
+                    cellIndex: piece.initialCell.index
                 });
             }
         }
@@ -110,6 +109,20 @@ export class MatchBroadcaster {
         this.dispatcher.broadcastMessage(
             ServerOpCode.PiecesPosition,
             JSON.stringify(pieces)
+        );
+    }
+
+    public CapturePiece(piece: Piece): void {
+
+        const packet = JSON.stringify({
+            playerColor: piece.player.color,
+            pieceId: piece.id,
+            cellIndex: piece.initialCell.index
+        });
+
+        this.dispatcher.broadcastMessage(
+            ServerOpCode.CapturePiece,
+            packet
         );
     }
     // ─────────────────────────────
@@ -130,7 +143,13 @@ export class MatchBroadcaster {
     // ─────────────────────────────
     // Dice
     // ─────────────────────────────
+    public Rolling(): void {
 
+        this.dispatcher.broadcastMessage(
+            ServerOpCode.Rolling,
+            ""
+        );
+    }
     public DiceValue(value: number): void {
 
         this.dispatcher.broadcastMessage(
@@ -145,14 +164,17 @@ export class MatchBroadcaster {
     // ─────────────────────────────
     public AvailableActions(
         player: Player,
-        actions: GameAction[] | undefined
+        actions: GameActionData[] | undefined
     ): void {
 
         if (!player.presence)
             return;
 
         const packet = JSON.stringify(
-            (actions ?? []).map(a => a.ToObject())
+            (actions ?? []).map(action => ({
+                ...action,
+                Result: null
+            }))
         );
 
         this.dispatcher.broadcastMessage(
@@ -161,6 +183,8 @@ export class MatchBroadcaster {
             [player.presence]
         );
     }
+
+
 
     public LightsChanged(
         player: Player
@@ -179,17 +203,12 @@ export class MatchBroadcaster {
     }
 
     public NewAction(
-        version: number,
-        player: PlayerColor,
         action: GameAction
     ): void {
 
-        const packet = JSON.stringify({
-            version: version,
-            actingPlayer: player,
-            action: action.ToObject(),
-            result: action.result.ToObject()
-        });
+        const packet = JSON.stringify(
+            action.ToData()
+        );
 
         this.dispatcher.broadcastMessage(
             ServerOpCode.NewAction,
@@ -197,15 +216,17 @@ export class MatchBroadcaster {
         );
     }
 
-
     // ─────────────────────────────
     // Player
     // ─────────────────────────────
 
-    public PlayerFinish(): void {
+    public PlayerFinish(player: Player): void {
 
         this.dispatcher.broadcastMessage(
-            ServerOpCode.PlayerFinish
+            ServerOpCode.PlayerFinish,
+            JSON.stringify({
+                playerColor: player.color
+            })
         );
     }
 }

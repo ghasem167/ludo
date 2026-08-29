@@ -8,6 +8,7 @@ import { matchSignal } from "./Match/Handler/matchSignal";
 import { GameMode, TeamMode } from "./Match/Handler/Enums";
 import { MatchLabel } from "./Match/Handler/MatchLabel";
 import { BuyAssetRpc } from "./RPC/inventory";
+import { LoadCustomization, LoadInventory } from "./RPC/PlayerAssets";
 function InitModule(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
@@ -25,6 +26,15 @@ function InitModule(
         "buy_asset",
         BuyAssetRpc
     );
+    initializer.registerRpc(
+    "LoadInventory",
+    LoadInventory
+);
+
+initializer.registerRpc(
+    "LoadCustomization",
+    LoadCustomization
+);
 
     // =========================
     // MATCH HANDLER

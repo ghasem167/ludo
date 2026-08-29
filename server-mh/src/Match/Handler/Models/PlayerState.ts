@@ -6,10 +6,9 @@ export class PlayerState {
     public isPresent: boolean;
     public isFinished: boolean;
     public isBot: boolean;
-    public hasReward: boolean;
-    public hasOffer: boolean;
     public hasSpecialSafeCell: boolean;
     public hasSpecialPenaltyCell: boolean;
+    public spawnedBefore: boolean;
     
 
     constructor(
@@ -18,8 +17,6 @@ export class PlayerState {
         isPresent: boolean = true,
         isFinished: boolean = false,
         isBot: boolean = false,
-        hasReward: boolean = false,
-        hasOffer: boolean = false,
         hasSpecialSafeCell: boolean = false,
         hasSpecialPenaltyCell: boolean = false
     ) {
@@ -28,9 +25,8 @@ export class PlayerState {
         this.isPresent = isPresent;
         this.isFinished = isFinished;
         this.isBot = isBot;
-        this.hasReward = hasReward;
-        this.hasOffer = hasOffer;
         this.hasSpecialSafeCell = hasSpecialSafeCell;
         this.hasSpecialPenaltyCell = hasSpecialPenaltyCell;
+        this.spawnedBefore = false;
     }
 }

@@ -2,14 +2,13 @@ import { Board } from "./Board";
 import { PlayerColor } from "../Enums";
 import { Piece } from "./Piece";
 import { PlayerState } from "./PlayerState";
-import { PieceState } from "./PieceState";
 export class Player {
-    public color: PlayerColor;
+    public readonly color: PlayerColor;
     public userId: string;
     public userName: string;
     public userNickName: string;
     public pieces: Piece[];
-    public friend: Player | null;
+    public readonly friend: Player | null;
     public presence: nkruntime.Presence | null;
     public playerState: PlayerState;
 
@@ -33,41 +32,15 @@ export class Player {
 
 
     }
-    public static CreateHuman(
-        color: PlayerColor,
-        presence: nkruntime.Presence,
-        board: Board
-    ): Player {
-
-        const player = new Player(0);
-
-        player.color = color;
-        player.userId = presence.userId;
-        player.userName = presence.username;
-        player.userNickName = presence.username;
-        player.presence = presence;
-
-        player.playerState.isBot = false;
-        player.playerState.isPresent = true;
-
-        for (let i = 0; i < 3; i++) {
-            const piece = new Piece(i, board.cells[
-                board.config.playerPath[color].initialCells[i]
-            ], new PieceState(), player);
-            player.pieces.push(piece);
-        }
-
-        return player;
-    }
+    
 
     public static CreateBot(
         color: PlayerColor,
         board: Board
     ): Player {
 
-        const player = new Player(0);
+        const player = new Player(color);
 
-        player.color = color;
         player.userId = "";
         player.userName = "Bot";
         player.userNickName = "Bot";
@@ -77,8 +50,8 @@ export class Player {
         player.playerState.isPresent = false;
         for (let i = 0; i < 3; i++) {
             const piece = new Piece(i, board.cells[
-                board.config.playerPath[color].initialCells[i]
-            ], new PieceState(), player);
+                board.config.playerPath[player.color].initialCells[i]
+            ], player);
             player.pieces.push(piece);
         }
 
@@ -86,6 +59,7 @@ export class Player {
         return player;
     }
     public static ConvertToHuman(player:Player, presence: nkruntime.Presence){
+
         player.userId = presence.userId;
         player.userName = presence.username;
         player.userNickName = presence.username;

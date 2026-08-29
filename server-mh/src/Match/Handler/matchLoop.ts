@@ -15,7 +15,6 @@ export function matchLoop (ctx: nkruntime.Context,
 	messages: nkruntime.MatchMessage[]
 ): { state: nkruntime.MatchState } | null {
 	const matchState = state as ludoMatchstate;
-	logger.debug('Lobby match loop executed');
 	if (!gameFlowManager) {
 		gameFlowManager = new GameFlowManager();
 	}

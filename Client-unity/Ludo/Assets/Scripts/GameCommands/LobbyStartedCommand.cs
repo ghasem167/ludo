@@ -5,14 +5,13 @@ using System.Threading.Tasks;
 
 public class LobbyStartedCommand : GameCommand
 {
-    private List<PlayerDto> _players;
-    public LobbyStartedCommand(List<PlayerDto> players)
+    public LobbyStartedCommand()
     {
-        _players = players;
     }
     public override async Task Execute()
     {
         //Start Show Lobby Page
+        UnityEngine.Debug.Log("lobby executed");
         await Task.CompletedTask;
     }
 }

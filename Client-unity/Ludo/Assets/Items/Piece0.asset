@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 637a8e64909e26f49aa918dc58b1f6c3, type: 3}
   m_Name: Piece0
   m_EditorClassIdentifier: Assembly-CSharp::PieceItem
-  Id: 
-  DisplayName: 
+  Id: piece_default
+  DisplayName: Free Piece
   Icon: {fileID: 0}
-  PreviewPrefab: {fileID: 0}
-  GamePrefab: {fileID: 0}
+  PreviewPrefab: {fileID: 1553854045876281491, guid: 006d7f33a47bf3c4783fb563c93e9f9c, type: 3}
+  GamePrefab: {fileID: 1553854045876281491, guid: 006d7f33a47bf3c4783fb563c93e9f9c, type: 3}
   Price: 0

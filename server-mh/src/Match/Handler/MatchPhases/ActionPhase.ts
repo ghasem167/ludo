@@ -5,7 +5,6 @@ import { ClientOpCode, Phase } from "../Enums";
 export class ActionPhase extends PhaseBase {
 
     public override Start(context: MatchContext): void {
-
         const currentPlayer =
             context.state.players[context.state.turnState.currentPlayer];
 

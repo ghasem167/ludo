@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,8 +7,8 @@ using UnityEngine.EventSystems;
 public class Dice : MonoBehaviour, IPointerClickHandler
 {
     private bool _isSelectable;
+    private Action _onSelectedAction;
 
-    public bool IsSelectable => _isSelectable;
     [SerializeField] private float rotationSpeed = 720f;
     [SerializeField] private float stopDuration = 0.5f;
 
@@ -32,13 +33,20 @@ public class Dice : MonoBehaviour, IPointerClickHandler
     {
         _isSelectable = false;
     }
+    public void SetSelectable(Action onSelected = null)
+    {
+        Enable();
+        _onSelectedAction = onSelected;
+        
+    }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (!_isSelectable)
             return;
+        StartRolling();
+        _onSelectedAction?.Invoke();
 
-        Disable();
     }
     private void Awake()
     {
@@ -50,8 +58,9 @@ public class Dice : MonoBehaviour, IPointerClickHandler
             return;
 
         transform.Rotate(
-            Random.insideUnitSphere * rotationSpeed * Time.deltaTime,
-            Space.Self
+
+            UnityEngine.Random.insideUnitSphere * rotationSpeed * Time.deltaTime,
+            Space.World
         );
     }
 
@@ -64,6 +73,7 @@ public class Dice : MonoBehaviour, IPointerClickHandler
         }
 
         isRolling = true;
+        Disable();
     }
     public void StopRolling(int face)
     {
@@ -118,6 +128,7 @@ public class Dice : MonoBehaviour, IPointerClickHandler
 
         stopCoroutine = null;
     }
+    
 
 
 }

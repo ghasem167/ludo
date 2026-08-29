@@ -3,5 +3,5 @@ public class PiecePositionDto
 {
     public PlayerColor PlayerColor;
     public int PieceId;
-    public int? CellIndex;
+    public int CellIndex;
 }

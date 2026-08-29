@@ -4,8 +4,8 @@ import { Player } from "./Player";
 import { TurnState } from "./TurnState";
 import { DiceState } from "./DiceState";
 import { MatchConfig } from "./MatchConfig";
-import { GameAction } from "../Actions/GameAction";
 import { MatchLabel } from "../MatchLabel";
+import { GameActionData } from "../Actions/Datas";
 
 export class MatchState {
     public tickCounter:number=0;
@@ -15,7 +15,7 @@ export class MatchState {
     public winnerList: PlayerColor[];
     public turnState: TurnState;
     public diceState: DiceState;
-    public availableActions: GameAction[]|undefined;
+    public availableActions: GameActionData[]|undefined;
     public selectedAction:number=0;
     public currentPhase: Phase|null;
     public pendingPhase: Phase | null

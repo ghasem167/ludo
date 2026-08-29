@@ -1,7 +1,7 @@
 public enum GameScene
 {
     Splash,
-    MainMenu,
+    Menu,
     Match
 }
 
@@ -18,21 +18,27 @@ public enum opcode
     Players,
 
     MatchStarted,
-    
     PiecesPosition,
 
     TurnStarted,
 
     DiceValue,
+    Rolling,
     LightsChanged,
 
     AvailableActions,
 
     NewAction,
+    CapturePiece,
 
-    PlayerFinished,
+    PlayerFinish,
 
-    MatchFinished
+    MatchFinish
+}
+public enum ClientOpCode
+{
+    RollDice = 0,
+    SelectAction = 1
 }
 
 public enum PlayerColor
@@ -44,16 +50,18 @@ public enum PlayerColor
 }
 public enum GameActionType
 {
-    Move,
-    Spawn,
-    ActivateSafeCell,
-    ActivatePenaltyCell
+    SpawnAction = 0,
+    MoveAction = 1,
+    ActivateSafeCellAction = 2,
+    ActivatePenaltyCellAction = 3
 }
-public enum GameMode {
+public enum GameMode
+{
     Modern = 0,
     Classic = 1
 }
-public enum TeamMode {
+public enum TeamMode
+{
     None = 0,
     TwoVsTwo = 1
 }

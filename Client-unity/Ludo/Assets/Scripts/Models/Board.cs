@@ -76,7 +76,7 @@ public class Board : MonoBehaviour
     {
         foreach (Player player in players)
         {
-            if (player.playerDto.Color == color)
+            if (player.playerColor == color)
                 return player;
         }
 

@@ -1,18 +1,27 @@
 using System;
+using UnityEngine;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 [Serializable]
 public class GameAssets
 {
+    private GameNetworkServices _networkServices;
     public AssetCatalog catalog;
     public PlayerCustomization Customization { get; set; }
     public PlayerInventory Inventory { get; set; }
 
-    public GameAssets(GameNetworkServices networkServices)
+  
+
+   
+    public async Task Initialize(GameNetworkServices gameNetworkServices)
     {
-        Customization = new PlayerCustomization();
-        Inventory = new PlayerInventory(networkServices,catalog);
-        
-        
-        
+        _networkServices=gameNetworkServices;
+        Inventory = new PlayerInventory(_networkServices, catalog);
+
+        await Inventory.InitializeAsync();
+
+        Customization = new PlayerCustomization(_networkServices, Inventory);
+        await Customization.InitializeAsync();
     }
 }

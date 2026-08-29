@@ -37,11 +37,13 @@ export enum ServerOpCode {
     TurnStarted,
 
     DiceValue,
+    Rolling,
     LightsChanged,
 
     AvailableActions,
 
     NewAction,
+    CapturePiece,
 
     PlayerFinish,
 

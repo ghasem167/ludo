@@ -4,36 +4,37 @@ using System.Threading.Tasks;
 
 public class AvailableActionCommand : GameCommand
 {
-    public AvailableActionDto availableActionDto;
-    public AvailableActionCommand(AvailableActionDto dto)
+    private readonly List<GameActionDto> _availableActions;
+
+    public AvailableActionCommand(List<GameActionDto> availableActions)
     {
-        availableActionDto = dto;
+        _availableActions = availableActions;
     }
 
 
     public override Task Execute()
     {
 
-        for (int i = 0; i < availableActionDto.AvailableActions.Count; i++)
+        for (int i = 0; i < _availableActions.Count; i++)
         {
-            var action = availableActionDto.AvailableActions[i];
+            var action = _availableActions[i];
             ActionSelectable obj = null;
 
             switch (action.Type)
             {
-                case GameActionType.Move:
-                case GameActionType.Spawn:
+                case GameActionType.MoveAction:
+                case GameActionType.SpawnAction:
 
                     obj = GameManager.Instance.BoardFactory.Board.GetPiece(
-                        GameManager.Instance.LastContext.CurrentPlayer,
+                        GameManager.Instance.GamePlayHandler.LastContext.CurrentPlayer,
                         action.PieceIndex
                     );
 
                     break;
 
 
-                case GameActionType.ActivateSafeCell:
-                case GameActionType.ActivatePenaltyCell:
+                case GameActionType.ActivateSafeCellAction:
+                case GameActionType.ActivatePenaltyCellAction:
 
                     obj = GameManager.Instance.BoardFactory.Board.GetCell(
                         action.CellIndexes[0]

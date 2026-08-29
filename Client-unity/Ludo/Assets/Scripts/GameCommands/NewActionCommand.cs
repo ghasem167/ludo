@@ -1,60 +1,77 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
-
+using UnityEngine;
 
 public class NewActionCommand : GameCommand
 {
-    GameActionDto selectedAction;
+    private readonly GameActionDto selectedAction;
+
     public NewActionCommand(GameActionDto gameActionDto)
     {
         selectedAction = gameActionDto;
+        UnityEngine.Debug.Log($"NewActionCommand: selectedAction: Type={selectedAction.Type}, PlayerColor={selectedAction.PlayerColor}, PieceIndex={selectedAction.PieceIndex}, CellIndexes=[{string.Join(",", selectedAction.CellIndexes)}]");
     }
+
     public override async Task Execute()
     {
         Board board = GameManager.Instance.BoardFactory.Board;
 
         switch (selectedAction.Type)
         {
-            case GameActionType.Move:
-
+            case GameActionType.MoveAction:
+            {
                 Piece piece = board.GetPiece(
                     selectedAction.PlayerColor,
                     selectedAction.PieceIndex);
+
+                piece.ClearSelectable();
 
                 await piece.MoveAlong(
                     board.GetCells(selectedAction.CellIndexes));
 
                 break;
+            }
 
-            case GameActionType.Spawn:
-
-                Piece spawnPiece = board.GetPiece(
+            case GameActionType.SpawnAction:
+            {
+                Piece piece = board.GetPiece(
                     selectedAction.PlayerColor,
                     selectedAction.PieceIndex);
 
-                Cell startCell = board.GetCell(selectedAction.CellIndexes[0]);
+                piece.ClearSelectable();
 
-                await spawnPiece.Spawn(startCell);
+                Cell startCell =
+                    board.GetCell(selectedAction.CellIndexes[0]);
 
-                break;
-
-            case GameActionType.ActivateSafeCell:
-
-                Cell safeCell = board.GetCell(selectedAction.CellIndexes[0]);
-
-                await safeCell.ActiveAsSafe();
+                await piece.Spawn(startCell);
 
                 break;
+            }
 
-            case GameActionType.ActivatePenaltyCell:
+            case GameActionType.ActivateSafeCellAction:
+            {
+                Cell cell =
+                    board.GetCell(selectedAction.CellIndexes[0]);
 
-                Cell penaltyCell = board.GetCell(selectedAction.CellIndexes[0]);
+                cell.ClearSelectable();
 
-                await penaltyCell.ActiveAsPenalty();
+                await cell.ActiveAsSafe();
 
                 break;
+            }
+
+            case GameActionType.ActivatePenaltyCellAction:
+            {
+                Cell cell =
+                    board.GetCell(selectedAction.CellIndexes[0]);
+
+                cell.ClearSelectable();
+
+                await cell.ActiveAsPenalty();
+
+                break;
+            }
         }
-
-        await Task.CompletedTask;
     }
 }

@@ -1,36 +1,35 @@
 import { MatchState } from "./MatchState";
 import { GameAction } from "../Actions/GameAction";
 import { Piece } from "./Piece";
-import { SpawnAction } from "../Actions/SpawnAction";
-import { GameMode } from "../Enums";
+import { ActionType, GameMode } from "../Enums";
 import { Player } from "./Player";
 import { Cell } from "./Cell";
-import { ActiveSafeCellAction } from "../Actions/ActiveSafeCellAction";
-import { ActivatePenaltyCellAction } from "../Actions/ActivePenaltyCellAction";
-import { MoveAction } from "../Actions/MoveAction";
+
 import { ActionResult } from "../Actions/ActionResult";
 export class RuleEngine {
 
     private matchState: MatchState;
     public availableActions: GameAction[];
     private player: Player | undefined;
-
+    private logger: nkruntime.Logger
 
     constructor(
         matchState: MatchState,
+        logger: nkruntime.Logger
     ) {
         this.matchState = matchState;
+        this.logger = logger;
         this.availableActions = [];
         this.player = this.matchState.players.find(
             p => p.color === this.matchState.turnState.currentPlayer
         );
     }
-    public ResolveDiceResult() {
+    public ResolveDiceResult(): void {
         if (!this.player)
             return;
 
         if (this.matchState.diceState.diceValue == 6) {
-            this.matchState.turnState.hasReward = true;
+           
             this.CheckForSpawnPices();
             if (this.matchState.config.mode === GameMode.Modern) {
                 this.CheckForSpecialActions();
@@ -44,13 +43,14 @@ export class RuleEngine {
     }
     private CheckForSpawnPices() {
 
-        const startCell = this.matchState.board.config.playerPath[this.matchState.turnState.currentPlayer].startHomeEntryCell;
 
+        const startCell = this.matchState.board.config.playerPath[this.matchState.turnState.currentPlayer].startHomeEntryCell;
         if (this.CellIsEmpty(startCell)) {
             const spawnablePieces = this.GetSpawnablePieces()
             for (const piece of spawnablePieces) {
 
                 this.AddSpawnAction(piece);
+                this.logger.info(`spawnable piece: ${piece.id}, currentCell: ${piece.currentCell.index}`);
             }
 
         }
@@ -85,11 +85,12 @@ export class RuleEngine {
 
         if (!this.player)
             return;
-
+        this.logger.info(`CheckForMoveAction: player: ${this.player.color}, pieces:${this.player.pieces.map(p => p.pieceState.spawned).join(",")}`);
         for (const piece of this.player.pieces) {
 
-            if (piece.pieceState.finished)
+            if (piece.pieceState.finished || !piece.pieceState.spawned)
                 continue;
+            this.logger.info(`CheckForMoveAction: piece: ${piece.id}, currentCell: ${piece.currentCell.index},isSpawned: ${piece.pieceState.spawned}`);
             let path: Cell[] | null = this.FindPath(
                 piece,
                 this.matchState.diceState.diceValue
@@ -99,24 +100,7 @@ export class RuleEngine {
                 continue;
             let destination = null;
             destination = path[path?.length - 1];
-
-
-            const pieceInDestination = this.GetPieceAt(destination);
-
-            // خانه اشغال شده است
-            if (pieceInDestination) {
-
-                if (this.IsEnemyPiece(pieceInDestination) && !destination.isSafe) {
-
-                    this.AddMoveAction(
-                        piece,
-                        path,
-                        new ActionResult(pieceInDestination)
-                    );
-                }
-
-                continue;
-            }
+            this.logger.info(`piece: ${piece.player.color}  ${piece.id} destination: ${destination?.index}`)
 
             // خانه Final
             if (destination.isFinal) {
@@ -128,11 +112,74 @@ export class RuleEngine {
                 this.AddMoveAction(
                     piece,
                     path,
-                    new ActionResult(null, false, pieceFinished, playerFinished, matchFinished)
+                    new ActionResult(null, null, false, pieceFinished, playerFinished, matchFinished)
                 );
 
                 continue;
             }
+
+            const pieceInDestination = this.GetPieceAt(destination);
+
+            this.logger.info(`pieceInDestination: ${pieceInDestination?.player.color}`)
+
+
+            // خانه اشغال شده است
+            if (pieceInDestination) {
+
+                this.logger.info(
+                    `pieceInDestination: ${pieceInDestination.player.color}`
+                );
+
+                let isSafe = destination.isSafe;
+
+                // اگر مقصد StartCell صاحب همین مهره باشد
+                const pieceStartCell =
+                    this.matchState.board.config.playerPath[
+                        pieceInDestination.player.color
+                    ].startHomeEntryCell;
+
+                if (destination.index === pieceStartCell) {
+
+                    // اگر مهره هنوز از Start خارج نشده،
+                    // StartCell برای آن Safe است.
+                    if (!pieceInDestination.pieceState.hasLeftStart) {
+                        isSafe = true;
+                    }
+                    else {
+                        // مهره قبلاً از Start خارج شده،
+                        // پس این خانه دیگر برای برخورد با آن Safe نیست.
+                        isSafe = false;
+                    }
+                }
+
+                if (isSafe) {
+                    this.logger.info('destination is safe cell');
+                    continue;
+                }
+
+                if (
+                    pieceInDestination.player.color === this.player.color ||
+                    pieceInDestination.player.color === this.player.friend?.color
+                ) {
+                    this.logger.info('a friendly piece is in destination');
+                    continue;
+                }
+
+                this.logger.info('an enemy is in destination');
+
+                this.AddMoveAction(
+                    piece,
+                    path,
+                    new ActionResult(
+                        pieceInDestination.player.color,
+                        pieceInDestination.id
+                    )
+                );
+
+                continue;
+            }
+
+
 
             // خانه Penalty
             if (destination.isPenalty) {
@@ -140,7 +187,7 @@ export class RuleEngine {
                 this.AddMoveAction(
                     piece,
                     path,
-                    new ActionResult(null, true)
+                    new ActionResult(null, null, true)
                 );
 
                 continue;
@@ -156,31 +203,64 @@ export class RuleEngine {
     }
 
     private CellIsEmpty(cell: number): boolean {
-        return !this.matchState.players.some((player: Player) =>
-            player.pieces.some((piece: Piece) => piece.currentCell === this.matchState.board.cells[cell])
-        );
+        let cellObj = this.matchState.board.cells[cell];
+        for (const player of this.matchState.players) {
+            for (const piece of player.pieces) {
+                if (piece.currentCell.index === cellObj.index)
+                    return false;
+            }
+
+        }
+        return true;
     }
 
     private AddSpawnAction(piece: Piece): void {
 
-        this.availableActions.push(
-            new SpawnAction(piece)
-        );
+        const action = new GameAction();
+
+        action.actionType = ActionType.SpawnAction;
+        action.playerColor = piece.player.color;
+        action.pieceIndex = piece.id;
+        action.path.push(this.matchState.board.config.playerPath[piece.player.color].startHomeEntryCell);
+        this.availableActions.push(action);
     }
     private AddActiveSafeCellAction(cell: Cell): void {
 
-        this.availableActions.push(
-            new ActiveSafeCellAction(cell)
-        );
+        const action = new GameAction();
+
+        action.actionType =
+            ActionType.ActivateSafeCellAction;
+
+        action.path = [cell.index];
+
+        this.availableActions.push(action);
     }
     private AddPenaltySafeCellAction(cell: Cell): void {
 
-        this.availableActions.push(
-            new ActivatePenaltyCellAction(cell)
-        );
+        const action = new GameAction();
+
+        action.actionType =
+            ActionType.ActivatePenaltyCellAction;
+
+        action.path = [cell.index];
+
+        this.availableActions.push(action);
     }
-    private AddMoveAction(piece: Piece, path: Cell[], result: ActionResult | undefined) {
-        this.availableActions.push(new MoveAction(piece, path, result))
+    private AddMoveAction(
+        piece: Piece,
+        path: Cell[],
+        result: ActionResult | undefined
+    ): void {
+
+        const action = new GameAction();
+
+        action.actionType = ActionType.MoveAction;
+        action.playerColor = piece.player.color;
+        action.pieceIndex = piece.id;
+        action.path = path.map(cell => cell.index);
+        action.result = result;
+
+        this.availableActions.push(action);
     }
     private GetSpawnablePieces(): Piece[] {
 
@@ -189,7 +269,7 @@ export class RuleEngine {
             return [];
 
         return this.player.pieces.filter(
-            piece => piece.currentCell = piece.initialCell
+            piece => piece.pieceState.spawned === false && piece.pieceState.finished === false
         );
     }
 
@@ -206,11 +286,13 @@ export class RuleEngine {
                 piece.currentCell = originalCell;
                 return null;
             }
+            this.logger.info(`FindPath: piece: ${piece.id}, currentCell: ${piece.currentCell.index}, nextCell: ${nextCell.index}`);
             path.push(nextCell);
             // فقط برای محاسبه مسیر
             piece.currentCell = nextCell;
 
         }
+        this.logger.info(`FindPath: piece: ${piece.id}, path: ${path.map(c => c.index).join(",")}`);
 
 
         // وضعیت واقعی مهره تغییر نکند
@@ -244,34 +326,24 @@ export class RuleEngine {
         }
 
         // حرکت روی مسیر اصلی
-        const nextIndex =
-            (currentIndex + 1) % this.matchState.board.config.numOfCellsInBoard;
-
+        const nextIndex = (currentIndex + 1) > 47 ? 12 : currentIndex + 1;
+        this.logger.info(`NextCell: piece: ${piece.id}, currentCell: ${currentIndex}, nextIndex: ${nextIndex}`);
         return this.matchState.board.cells[nextIndex];
     }
     private GetPieceAt(cell: Cell): Piece | null {
-
+        this.logger.info(`GetPieceAt: ${cell.index}`);
         for (const player of this.matchState.players) {
 
             for (const piece of player.pieces) {
 
-                if (piece.currentCell === cell)
+                if (piece.currentCell.index === cell.index)
                     return piece;
             }
         }
 
         return null;
     }
-    private IsEnemyPiece(piece: Piece): boolean {
 
-        if (piece.player === this.player)
-            return false;
-
-        if (piece.player === this.player?.friend)
-            return false;
-
-        return true;
-    }
     private twoPiecesOfPlayerFinish(): boolean {
         let reachedPieces: number = 0;
         for (const piece of this.player!.pieces) {

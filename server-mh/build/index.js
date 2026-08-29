@@ -1,10 +1,11 @@
 'use strict';
 
 class DiceState {
-    constructor(waitingForRoll = false, diceValue = 0, waitingForActionSelect = false) {
-        this.waitingForRoll = waitingForRoll;
-        this.diceValue = diceValue;
-        this.waitingForActionSelect = waitingForActionSelect;
+    constructor() {
+        this.waitingForInput = false;
+        this.waitingForAnimation = false;
+        this.diceValue = 0;
+        this.waitingForActionSelect = false;
     }
 }
 
@@ -41,14 +42,19 @@ var ClientOpCode;
 })(ClientOpCode || (ClientOpCode = {}));
 var ServerOpCode;
 (function (ServerOpCode) {
-    ServerOpCode[ServerOpCode["MatchStarted"] = 0] = "MatchStarted";
-    ServerOpCode[ServerOpCode["TurnStarted"] = 1] = "TurnStarted";
-    ServerOpCode[ServerOpCode["RollDiceResult"] = 2] = "RollDiceResult";
-    ServerOpCode[ServerOpCode["AvailableActions"] = 3] = "AvailableActions";
-    ServerOpCode[ServerOpCode["ActionExecuted"] = 4] = "ActionExecuted";
-    ServerOpCode[ServerOpCode["BoardUpdated"] = 5] = "BoardUpdated";
-    ServerOpCode[ServerOpCode["PlayerFinish"] = 6] = "PlayerFinish";
-    ServerOpCode[ServerOpCode["GameEnded"] = 7] = "GameEnded";
+    ServerOpCode[ServerOpCode["LobbyStarted"] = 0] = "LobbyStarted";
+    ServerOpCode[ServerOpCode["PlayerAdded"] = 1] = "PlayerAdded";
+    ServerOpCode[ServerOpCode["Players"] = 2] = "Players";
+    ServerOpCode[ServerOpCode["MatchStarted"] = 3] = "MatchStarted";
+    ServerOpCode[ServerOpCode["PiecesPosition"] = 4] = "PiecesPosition";
+    ServerOpCode[ServerOpCode["TurnStarted"] = 5] = "TurnStarted";
+    ServerOpCode[ServerOpCode["DiceValue"] = 6] = "DiceValue";
+    ServerOpCode[ServerOpCode["Rolling"] = 7] = "Rolling";
+    ServerOpCode[ServerOpCode["LightsChanged"] = 8] = "LightsChanged";
+    ServerOpCode[ServerOpCode["AvailableActions"] = 9] = "AvailableActions";
+    ServerOpCode[ServerOpCode["NewAction"] = 10] = "NewAction";
+    ServerOpCode[ServerOpCode["PlayerFinish"] = 11] = "PlayerFinish";
+    ServerOpCode[ServerOpCode["MatchFinish"] = 12] = "MatchFinish";
 })(ServerOpCode || (ServerOpCode = {}));
 var ActionType;
 (function (ActionType) {
@@ -57,6 +63,38 @@ var ActionType;
     ActionType[ActionType["ActivateSafeCellAction"] = 2] = "ActivateSafeCellAction";
     ActionType[ActionType["ActivatePenaltyCellAction"] = 3] = "ActivatePenaltyCellAction";
 })(ActionType || (ActionType = {}));
+
+class MatchConfig {
+    constructor(mode = GameMode.Classic, team = TeamMode.None) {
+        this.mode = mode;
+        this.team = team;
+    }
+}
+
+class MatchLabel {
+    constructor(gameMode = GameMode.Classic, teamMode = TeamMode.None) {
+        this.matchStarted = false;
+        this.presentPlayerCount = 0;
+        this.maxPlayers = 4;
+        this.gameMode = GameMode.Classic;
+        this.teamMode = TeamMode.None;
+        this.gameMode = gameMode;
+        this.teamMode = teamMode;
+    }
+    toJson() {
+        return JSON.stringify(this);
+    }
+    static fromJson(json) {
+        return Object.assign(new MatchLabel(), JSON.parse(json));
+    }
+    static compare(a, b) {
+        const la = MatchLabel.fromJson(a);
+        const lb = MatchLabel.fromJson(b);
+        if (la.presentPlayerCount !== lb.presentPlayerCount)
+            return lb.presentPlayerCount - la.presentPlayerCount;
+        return 0;
+    }
+}
 
 class MatchState {
     constructor(matchStarted, board, config, turnState, diceState, players = []) {
@@ -73,6 +111,9 @@ class MatchState {
         this.pendingPhase = Phase.Start;
         this.matchEnd = false,
             this.matchFinish = false;
+        this.label = new MatchLabel();
+        this.label.teamMode = config.team;
+        this.label.gameMode = config.mode;
         this.version = 1;
     }
 }
@@ -104,6 +145,7 @@ class Board {
     constructor(config) {
         this.config = config;
         this.cells = [];
+        this.CreateBoard();
     }
     CreateBoard() {
         this.cells = Array.from({ length: this.config.numOfCellsInBoard }, (_, index) => new Cell(index));
@@ -246,30 +288,47 @@ const MATCH_TICK_RATE = 10;
 const START_DELAY_SECONDS = 20;
 const DICE_HUMAN_TIMEOUT_SECONDS = 6;
 const DICE_BOT_TIMEOUT_SECONDS = 2;
+const DICE_WAITING_FOR_ANIMATION = 1;
 const ACTIONSELECT_HUMAN_TIMEOUT_SECONDS = 6;
 const ACTIONSELECT_BOT_TIMEOUT_SECONDS = 2;
 const END_MATCH_TIMEOUT_SECONDS = 10;
+const DEFAULT_ASSETS = {
+    pieces: [
+        "piece_default"
+    ],
+    dices: [
+        "dice_default"
+    ],
+    boards: [
+        "board_default"
+    ],
+    stickers: [],
+    phrases: []
+};
 
 function matchInit(ctx, logger, nk, params) {
-    logger.debug('Lobby match created');
-    const initialPresences = JSON.parse(params.initialPresences);
-    const matchConfig = JSON.parse(params.config);
+    logger.info("LUDO MATCH INIT");
+    logger.info(JSON.stringify(params));
+    const matchConfig = new MatchConfig(Number(params.gameMode), Number(params.teamMode));
     const board = new Board(BoardConfig.ClassicLudo());
-    const players = [] = [Player.CreateHuman(PlayerColor.Blue, initialPresences[0], board),
+    const players = [
+        Player.CreateBot(PlayerColor.Blue, board),
         Player.CreateBot(PlayerColor.Red, board),
         Player.CreateBot(PlayerColor.Yellow, board),
-        Player.CreateBot(PlayerColor.Green, board)];
+        Player.CreateBot(PlayerColor.Green, board)
+    ];
     if (matchConfig.team == TeamMode.TwoVsTwo) {
         players[0].friend = players[2];
         players[2].friend = players[0];
         players[1].friend = players[3];
         players[3].friend = players[1];
     }
-    const mState = new MatchState(false, board, matchConfig, new TurnState(PlayerColor.Blue, false, false, false, false, 0), new DiceState(false, 0, false), players);
+    const mState = new MatchState(false, board, matchConfig, new TurnState(PlayerColor.Blue, false, false, false, false, 0), new DiceState(), players);
+    mState.label = new MatchLabel(matchConfig.mode, matchConfig.team);
     return {
         state: mState,
         tickRate: MATCH_TICK_RATE,
-        label: "ludo-match"
+        label: mState.label.toJson()
     };
 }
 ;
@@ -297,19 +356,112 @@ function matchJoinAttempt(ctx, logger, nk, dispatcher, tick, state, presence, me
     };
 }
 
+class MatchBroadcaster {
+    constructor(dispatcher) {
+        this.dispatcher = dispatcher;
+    }
+    LobbyStarted(message) {
+        this.dispatcher.broadcastMessage(ServerOpCode.LobbyStarted, JSON.stringify(message));
+    }
+    PlayerAdded(player) {
+        const message = {
+            player: {
+                id: player.userId,
+                nikeName: player.userNickName,
+                color: player.color
+            }
+        };
+        this.dispatcher.broadcastMessage(ServerOpCode.PlayerAdded, JSON.stringify(message));
+    }
+    Players(presence, players) {
+        const message = {
+            players: players
+                .filter(p => !p.playerState.isBot)
+                .map(p => ({
+                id: p.userId,
+                userNikeName: p.userNickName,
+                color: p.color
+            }))
+        };
+        this.dispatcher.broadcastMessage(ServerOpCode.Players, JSON.stringify(message), [presence]);
+    }
+    MatchStarted(message) {
+        this.dispatcher.broadcastMessage(ServerOpCode.MatchStarted, JSON.stringify(message));
+    }
+    MatchFinish(winnerList) {
+        const packet = JSON.stringify({
+            winnerList
+        });
+        this.dispatcher.broadcastMessage(ServerOpCode.MatchFinish, packet);
+    }
+    PiecesPosition(players) {
+        const pieces = [];
+        for (const player of players) {
+            if (player.playerState.isBot)
+                continue;
+            for (const piece of player.pieces) {
+                pieces.push({
+                    playerColor: player.color,
+                    pieceId: piece.id,
+                    cellIndex: piece.initialCell.index
+                });
+            }
+        }
+        this.dispatcher.broadcastMessage(ServerOpCode.PiecesPosition, JSON.stringify(pieces));
+    }
+    TurnStarted(playerColor) {
+        this.dispatcher.broadcastMessage(ServerOpCode.TurnStarted, JSON.stringify({
+            playerColor
+        }));
+    }
+    Rolling() {
+        this.dispatcher.broadcastMessage(ServerOpCode.Rolling, "");
+    }
+    DiceValue(value) {
+        this.dispatcher.broadcastMessage(ServerOpCode.DiceValue, JSON.stringify(value));
+    }
+    AvailableActions(player, actions) {
+        if (!player.presence)
+            return;
+        const packet = JSON.stringify((actions !== null && actions !== void 0 ? actions : []).map(action => (Object.assign(Object.assign({}, action), { Result: null }))));
+        this.dispatcher.broadcastMessage(ServerOpCode.AvailableActions, packet, [player.presence]);
+    }
+    LightsChanged(player) {
+        if (!player.presence)
+            return;
+        this.dispatcher.broadcastMessage(ServerOpCode.LightsChanged, JSON.stringify({
+            playerColor: player.color,
+            lights: player.playerState.lights
+        }));
+    }
+    NewAction(action) {
+        const packet = JSON.stringify(action.ToData());
+        this.dispatcher.broadcastMessage(ServerOpCode.NewAction, packet);
+    }
+    PlayerFinish() {
+        this.dispatcher.broadcastMessage(ServerOpCode.PlayerFinish);
+    }
+}
+
 function matchJoin(ctx, logger, nk, dispatcher, tick, state, presences) {
     const mState = state;
     for (const presence of presences) {
-        let player = mState.players.find(p => p.userId === presence.userId);
+        const player = mState.players.find(p => p.userId === presence.userId);
         if (player) {
             player.presence = presence;
             player.playerState.isPresent = true;
             player.playerState.isBot = false;
+            mState.label.presentPlayerCount++;
         }
         else {
             const bot = mState.players.find(p => p.playerState.isBot);
             if (bot) {
                 Player.ConvertToHuman(bot, presence);
+                let newPresence = bot;
+                mState.label.presentPlayerCount++;
+                const broadcaster = new MatchBroadcaster(dispatcher);
+                broadcaster.PlayerAdded(newPresence);
+                broadcaster.Players(presence, mState.players);
             }
         }
     }
@@ -339,6 +491,7 @@ function matchLeave(ctx, logger, nk, dispatcher, tick, state, presences) {
         else {
             mState.players = mState.players.filter(p => p.userId !== presence.userId);
         }
+        mState.label.presentPlayerCount--;
     }
     const humanPlayers = mState.players.filter(p => !p.playerState.isBot);
     if (humanPlayers.length === 0) {
@@ -354,21 +507,14 @@ class PhaseBase {
 
 class ActionPhase extends PhaseBase {
     Start(context) {
+        context.logger.info("start action phase");
         const currentPlayer = context.state.players[context.state.turnState.currentPlayer];
-        context.state.diceState.waitingForActionSelect = false;
+        context.state.diceState.waitingForActionSelect = true;
         context.state.tickCounter = currentPlayer.playerState.isBot
             ? ACTIONSELECT_BOT_TIMEOUT_SECONDS * MATCH_TICK_RATE
             : ACTIONSELECT_HUMAN_TIMEOUT_SECONDS * MATCH_TICK_RATE;
     }
     Update(context) {
-        const currentPlayer = context.state.players[context.state.turnState.currentPlayer];
-        if (!context.state.diceState.waitingForActionSelect) {
-            if (!currentPlayer.playerState.isBot) {
-                this.SendAvailableActions(context, currentPlayer);
-            }
-            context.state.diceState.waitingForActionSelect = true;
-            return;
-        }
         context.state.tickCounter--;
         if (context.state.tickCounter <= 0) {
             this.SelectRandomAction(context);
@@ -377,12 +523,6 @@ class ActionPhase extends PhaseBase {
         if (this.HandleSelectAction(context)) {
             return;
         }
-    }
-    SendAvailableActions(context, player) {
-        if (!player.presence)
-            return;
-        const packet = JSON.stringify(context.state.availableActions.map((a) => a.ToObject()));
-        context.dispatcher.broadcastMessage(ServerOpCode.AvailableActions, packet, [player.presence]);
     }
     HandleSelectAction(context) {
         for (const message of context.messages) {
@@ -414,8 +554,37 @@ class ActionPhase extends PhaseBase {
     }
 }
 
+class GameActionData {
+    constructor() {
+        this.Type = ActionType.MoveAction;
+        this.PlayerColor = PlayerColor.Blue;
+        this.PieceIndex = 0;
+        this.CellIndexes = [];
+        this.Result = undefined;
+    }
+}
+class ActionResultData {
+    constructor() {
+        this.capturedEnemyColor = undefined;
+        this.capturedEnemyIndex = undefined;
+        this.enteredPenaltyCell = false;
+        this.pieceFinish = false;
+        this.playerFinish = false;
+        this.matchFinish = false;
+        this.activePenaltyCell = false;
+        this.activeSafeCell = false;
+    }
+}
+
 class ActionResult {
     constructor(capturedEnemy = null, enteredPenaltyCell = false, pieceFinish = false, playerFinish = false, matchFinish = false, activePenaltyCell = false, activeSafeCell = false) {
+        this.capturedEnemy = null;
+        this.enteredPenaltyCell = false;
+        this.pieceFinish = false;
+        this.playerFinish = false;
+        this.matchFinish = false;
+        this.activePenaltyCell = false;
+        this.activeSafeCell = false;
         this.capturedEnemy = capturedEnemy;
         this.enteredPenaltyCell = enteredPenaltyCell;
         this.pieceFinish = pieceFinish,
@@ -424,118 +593,136 @@ class ActionResult {
             this.activePenaltyCell = activePenaltyCell;
         this.activeSafeCell = activeSafeCell;
     }
-    ToObject() {
-        return {
-            capturedEnemy: this.capturedEnemy
-                ? {
-                    color: this.capturedEnemy.player.color,
-                    index: this.capturedEnemy.id
-                }
-                : null,
-            enteredPenaltyCell: this.enteredPenaltyCell,
-            pieceFinish: this.pieceFinish,
-            playerFinish: this.playerFinish,
-            matchFinish: this.matchFinish,
-            activePenaltyCell: this.activePenaltyCell,
-            activeSafeCell: this.activeSafeCell
-        };
+    ToData() {
+        const data = new ActionResultData();
+        if (this.capturedEnemy) {
+            data.capturedEnemyColor =
+                this.capturedEnemy.player.color;
+            data.capturedEnemyIndex =
+                this.capturedEnemy.id;
+        }
+        data.enteredPenaltyCell =
+            this.enteredPenaltyCell;
+        data.pieceFinish =
+            this.pieceFinish;
+        data.playerFinish =
+            this.playerFinish;
+        data.matchFinish =
+            this.matchFinish;
+        data.activePenaltyCell =
+            this.activePenaltyCell;
+        data.activeSafeCell =
+            this.activeSafeCell;
+        return data;
+    }
+    FromData(data, context) {
+        this.enteredPenaltyCell =
+            data.enteredPenaltyCell;
+        this.pieceFinish =
+            data.pieceFinish;
+        this.playerFinish =
+            data.playerFinish;
+        this.matchFinish =
+            data.matchFinish;
+        this.activePenaltyCell =
+            data.activePenaltyCell;
+        this.activeSafeCell =
+            data.activeSafeCell;
+        this.capturedEnemy = null;
+        context.logger.info(`ActionResult.FromData: capturedEnemyColor=${data.capturedEnemyColor}, capturedEnemyIndex=${data.capturedEnemyIndex}`);
+        if (data.capturedEnemyColor !== undefined &&
+            data.capturedEnemyIndex !== undefined) {
+            this.capturedEnemy =
+                context.state.players[data.capturedEnemyColor].pieces[data.capturedEnemyIndex];
+        }
     }
 }
 
 class GameAction {
-    constructor(actionType, result = new ActionResult()) {
-        this.actionType = actionType;
-        this.result = result;
-    }
-}
-
-class SpawnAction extends GameAction {
-    constructor(piece, result = new ActionResult()) {
-        super(ActionType.SpawnAction, result);
-        this.piece = piece;
-    }
-    ToObject() {
-        return {
-            actionType: ActionType.SpawnAction,
-            piece: {
-                color: this.piece.player.color,
-                index: this.piece.id
-            }
-        };
+    constructor() {
+        this.actionType = ActionType.MoveAction;
+        this.playerColor = PlayerColor.Blue;
+        this.pieceIndex = 0;
+        this.path = [];
+        this.result = undefined;
     }
     Apply(context) {
-        const color = this.piece.player.color;
-        const startCell = context.state.board.config.playerPath[color].startHomeEntryCell;
-        this.piece.currentCell = context.state.board.cells[startCell];
+        switch (this.actionType) {
+            case ActionType.MoveAction:
+                this.ApplyMove(context);
+                break;
+            case ActionType.SpawnAction:
+                this.ApplySpawn(context);
+                break;
+            case ActionType.ActivateSafeCellAction:
+                this.ApplyActiveSafeCell(context);
+                break;
+            case ActionType.ActivatePenaltyCellAction:
+                this.ApplyActivatePenaltyCell(context);
+                break;
+        }
     }
-}
-
-class ActiveSafeCellAction extends GameAction {
-    constructor(cell, result = new ActionResult()) {
-        super(ActionType.ActivateSafeCellAction, result);
-        this.cell = cell;
-    }
-    ToObject() {
-        return {
-            actionType: ActionType.ActivateSafeCellAction,
-            targetCell: this.cell.index
-        };
-    }
-    Apply(context) {
-        context.state.players[context.state.turnState.currentPlayer].playerState.hasSpecialSafeCell = false;
-        this.cell.isSafe = true;
-    }
-}
-
-class ActivatePenaltyCellAction extends GameAction {
-    constructor(cell, result = new ActionResult()) {
-        super(ActionType.ActivatePenaltyCellAction, result);
-        this.cell = cell;
-    }
-    ToObject() {
-        return {
-            actionType: ActionType.ActivatePenaltyCellAction,
-            targetCell: this.cell.index
-        };
-    }
-    Apply(context) {
-        context.state.players[context.state.turnState.currentPlayer].playerState.hasSpecialPenaltyCell = false;
-        this.cell.isPenalty = true;
-    }
-}
-
-class MoveAction extends GameAction {
-    constructor(piece, targetCell, result = new ActionResult()) {
-        super(ActionType.MoveAction, result);
-        this.piece = piece;
-        this.targetCell = targetCell;
-    }
-    ToObject() {
-        return {
-            actionType: ActionType.MoveAction,
-            piece: {
-                color: this.piece.player.color,
-                index: this.piece.id
-            },
-            targetCell: this.targetCell.index
-        };
-    }
-    Apply(context) {
-        this.piece.currentCell = this.targetCell;
-        this.piece.pieceState.hasLeftStart = true;
+    ApplyMove(context) {
+        const player = context.state.players[this.playerColor];
+        const piece = player.pieces[this.pieceIndex];
+        if (this.path.length > 0) {
+            const destinationCell = context.state.board.cells[this.path[this.path.length - 1]];
+            piece.currentCell = destinationCell;
+        }
+        piece.pieceState.hasLeftStart = true;
+        if (!this.result)
+            return;
         if (this.result.capturedEnemy)
             this.result.capturedEnemy.Reset();
         if (this.result.enteredPenaltyCell)
-            this.piece.Reset();
-        if (this.result.pieceFinish) {
-            this.piece.pieceState.finished = true;
-        }
+            piece.Reset();
+        if (this.result.pieceFinish)
+            piece.pieceState.finished = true;
         if (this.result.playerFinish) {
-            this.piece.player.playerState.isFinished = true;
-            context.state.winnerList.push(this.piece.player.color);
+            player.playerState.isFinished = true;
+            context.state.winnerList.push(this.playerColor);
         }
-        if (this.result.matchFinish) {
+        if (this.result.matchFinish)
             context.state.matchFinish = true;
+    }
+    ApplySpawn(context) {
+        const player = context.state.players[this.playerColor];
+        const piece = player.pieces[this.pieceIndex];
+        const startCell = context.state.board
+            .config
+            .playerPath[this.playerColor]
+            .startHomeEntryCell;
+        piece.currentCell =
+            context.state.board.cells[startCell];
+        piece.pieceState.spawned = true;
+    }
+    ApplyActiveSafeCell(context) {
+        const cell = context.state.board.cells[this.path[0]];
+        cell.isSafe = true;
+    }
+    ApplyActivatePenaltyCell(context) {
+        const cell = context.state.board.cells[this.path[0]];
+        cell.isPenalty = true;
+    }
+    ToData() {
+        const data = new GameActionData();
+        data.Type = this.actionType;
+        data.PlayerColor = this.playerColor;
+        data.PieceIndex = this.pieceIndex;
+        data.CellIndexes = [...this.path];
+        if (this.result)
+            data.Result = this.result.ToData();
+        return data;
+    }
+    FromData(data, context) {
+        this.actionType = data.Type;
+        this.playerColor = data.PlayerColor;
+        this.pieceIndex = data.PieceIndex;
+        this.path = [...data.CellIndexes];
+        this.result = undefined;
+        if (data.Result) {
+            this.result = new ActionResult();
+            this.result.FromData(data.Result, context);
         }
     }
 }
@@ -591,13 +778,15 @@ class RuleEngine {
         for (const piece of this.player.pieces) {
             if (piece.pieceState.finished)
                 continue;
-            const destination = this.FindDestination(piece, this.matchState.diceState.diceValue);
-            if (!destination)
+            let path = this.FindPath(piece, this.matchState.diceState.diceValue);
+            if (!path)
                 continue;
+            let destination = null;
+            destination = path[(path === null || path === void 0 ? void 0 : path.length) - 1];
             const pieceInDestination = this.GetPieceAt(destination);
             if (pieceInDestination) {
                 if (this.IsEnemyPiece(pieceInDestination) && !destination.isSafe) {
-                    this.AddMoveAction(piece, destination, new ActionResult(pieceInDestination));
+                    this.AddMoveAction(piece, path, new ActionResult(pieceInDestination));
                 }
                 continue;
             }
@@ -607,49 +796,68 @@ class RuleEngine {
                 let matchFinished = false;
                 if (playerFinished && this.matchState.winnerList.length == 2)
                     matchFinished = true;
-                this.AddMoveAction(piece, destination, new ActionResult(null, false, pieceFinished, playerFinished, matchFinished));
+                this.AddMoveAction(piece, path, new ActionResult(null, false, pieceFinished, playerFinished, matchFinished));
                 continue;
             }
             if (destination.isPenalty) {
-                this.AddMoveAction(piece, destination, new ActionResult(null, true));
+                this.AddMoveAction(piece, path, new ActionResult(null, true));
                 continue;
             }
-            this.AddMoveAction(piece, destination, new ActionResult());
+            this.AddMoveAction(piece, path, new ActionResult());
         }
     }
     CellIsEmpty(cell) {
         return !this.matchState.players.some((player) => player.pieces.some((piece) => piece.currentCell === this.matchState.board.cells[cell]));
     }
     AddSpawnAction(piece) {
-        this.availableActions.push(new SpawnAction(piece));
+        const action = new GameAction();
+        action.actionType = ActionType.SpawnAction;
+        action.playerColor = piece.player.color;
+        action.pieceIndex = piece.id;
+        this.availableActions.push(action);
     }
     AddActiveSafeCellAction(cell) {
-        this.availableActions.push(new ActiveSafeCellAction(cell));
+        const action = new GameAction();
+        action.actionType =
+            ActionType.ActivateSafeCellAction;
+        action.path = [cell.index];
+        this.availableActions.push(action);
     }
     AddPenaltySafeCellAction(cell) {
-        this.availableActions.push(new ActivatePenaltyCellAction(cell));
+        const action = new GameAction();
+        action.actionType =
+            ActionType.ActivatePenaltyCellAction;
+        action.path = [cell.index];
+        this.availableActions.push(action);
     }
-    AddMoveAction(piece, targetCell, result) {
-        this.availableActions.push(new MoveAction(piece, targetCell, result));
+    AddMoveAction(piece, path, result) {
+        const action = new GameAction();
+        action.actionType = ActionType.MoveAction;
+        action.playerColor = piece.player.color;
+        action.pieceIndex = piece.id;
+        action.path = path.map(cell => cell.index);
+        action.result = result;
+        this.availableActions.push(action);
     }
     GetSpawnablePieces() {
         if (!this.player)
             return [];
         return this.player.pieces.filter(piece => piece.currentCell = piece.initialCell);
     }
-    FindDestination(piece, diceValue) {
+    FindPath(piece, diceValue) {
         const originalCell = piece.currentCell;
+        const path = [];
         for (let i = 0; i < diceValue; i++) {
             const nextCell = this.NextCell(piece);
             if (nextCell == null) {
                 piece.currentCell = originalCell;
                 return null;
             }
+            path.push(nextCell);
             piece.currentCell = nextCell;
         }
-        const destination = piece.currentCell;
         piece.currentCell = originalCell;
-        return destination;
+        return path;
     }
     NextCell(piece) {
         const path = this.matchState.board.config.playerPath[piece.player.color];
@@ -699,114 +907,149 @@ class RuleEngine {
 
 class DicePhase extends PhaseBase {
     Start(context) {
-        context.state.diceState.waitingForRoll = false;
+        context.state.diceState.waitingForInput = true;
+        context.state.diceState.waitingForAnimation = false;
         if (context.state.players[context.state.turnState.currentPlayer].playerState.isBot)
             context.state.tickCounter = DICE_BOT_TIMEOUT_SECONDS * MATCH_TICK_RATE;
         else
             context.state.tickCounter = DICE_HUMAN_TIMEOUT_SECONDS * MATCH_TICK_RATE;
     }
     Update(context) {
-        if (context.state.diceState.waitingForRoll) {
-            context.state.tickCounter--;
-            if (context.state.tickCounter <= 0) {
-                context.state.players[context.state.turnState.currentPlayer].playerState.lights--;
-                this.Roll(context, context.state.players.find((p) => p.color === context.state.turnState.currentPlayer));
-                return;
-            }
-            for (const message of context.messages) {
-                if (message.opCode === ClientOpCode.RollDice) {
-                    const player = context.state.players.find((p) => p.userId === message.sender.userId);
-                    if (!player)
-                        return;
-                    if (player.color !== context.state.turnState.currentPlayer)
-                        return;
-                    this.Roll(context, player);
-                    return;
-                }
-            }
+        if (context.state.diceState.waitingForInput) {
+            context.logger.info("waiting for input");
+            this.UpdateWaitingForInput(context);
             return;
         }
-        let rule = new RuleEngine(context.state);
+        if (context.state.diceState.waitingForAnimation) {
+            context.logger.info(" waiting for animation");
+            this.UpdateWaitingForAnimation(context);
+            return;
+        }
+        context.logger.info(" resolve dice result start");
+        this.ResolveDiceResult(context);
+    }
+    UpdateWaitingForInput(context) {
+        context.state.tickCounter--;
+        if (context.state.tickCounter <= 0) {
+            this.HandleDiceTimeout(context);
+            return;
+        }
+        this.HandleRollInput(context);
+    }
+    HandleRollInput(context) {
+        for (const message of context.messages) {
+            if (message.opCode !== ClientOpCode.RollDice)
+                continue;
+            const player = context.state.players.find(p => p.userId === message.sender.userId);
+            if (!player)
+                continue;
+            if (player.color !== context.state.turnState.currentPlayer)
+                continue;
+            this.SetWaitingForAnimation(context);
+            return;
+        }
+    }
+    HandleDiceTimeout(context) {
+        const player = context.state.players.find(p => p.color === context.state.turnState.currentPlayer);
+        if (!player)
+            return;
+        player.playerState.lights--;
+        context.broadcaster.LightsChanged(player);
+        this.SetWaitingForAnimation(context);
+    }
+    UpdateWaitingForAnimation(context) {
+        context.state.tickCounter--;
+        if (context.state.tickCounter > 0)
+            return;
+        context.state.diceState.waitingForAnimation = false;
+        this.Roll(context);
+    }
+    ResolveDiceResult(context) {
+        var _a;
+        const rule = new RuleEngine(context.state);
         rule.ResolveDiceResult();
-        context.state.availableActions = rule.availableActions;
-        if (rule.availableActions.length == 0) {
-            if (!this.HasPlayerPieceOnBoard(context)) {
-                context.dispatcher.broadcastMessage(ServerOpCode.AvailableActions, "no valid move");
-                if (context.state.turnState.repeat <= 2) {
-                    context.state.turnState.anotherChance = true;
-                    context.state.pendingPhase = Phase.Turn;
-                    return;
-                }
-            }
-            else {
-                context.state.pendingPhase = Phase.Action;
-                return;
+        context.state.availableActions =
+            rule.availableActions.map(action => action.ToData());
+        const player = context.state.players.find(p => p.color === context.state.turnState.currentPlayer);
+        if (!player) {
+            context.logger.info("in resolve dice result Player is null");
+            return;
+        }
+        const actions = context.state.availableActions;
+        context.logger.info(`AvailableActions type: ${(_a = actions === null || actions === void 0 ? void 0 : actions.constructor) === null || _a === void 0 ? void 0 : _a.name}`);
+        if (actions) {
+            for (const action of actions) {
+                context.logger.info(`Action type: ${action.constructor.name}`);
             }
         }
-        const message = "turn: " + context.state.turnState.currentPlayer;
-        context.dispatcher.broadcastMessage(ServerOpCode.TurnStarted, JSON.stringify(message));
-        context.state.diceState.waitingForRoll = true;
-    }
-    Roll(context, player) {
-        context.state.diceState.diceValue = Math.floor(Math.random() * 6) + 1;
-        context.state.diceState.waitingForRoll = false;
-        context.dispatcher.broadcastMessage(ServerOpCode.RollDiceResult, JSON.stringify({
-            playerColor: player.color,
-            diceValue: context.state.diceState.diceValue
-        }));
-        context.state.diceState.waitingForRoll = false;
-    }
-    HasPlayerPieceOnBoard(context) {
-        for (let i = 0; i < 3; i++) {
-            if (context.state.players[context.state.turnState.currentPlayer].pieces[i].pieceState.spawned)
-                return true;
+        context.broadcaster.AvailableActions(player, context.state.availableActions);
+        if (rule.availableActions.length === 0) {
+            context.state.pendingPhase = Phase.Turn;
+            return;
         }
-        return false;
+        else {
+            context.state.pendingPhase = Phase.Action;
+        }
+    }
+    SetWaitingForAnimation(context) {
+        context.state.diceState.waitingForInput = false;
+        context.state.diceState.waitingForAnimation = true;
+        context.broadcaster.Rolling();
+        context.state.tickCounter = DICE_WAITING_FOR_ANIMATION * MATCH_TICK_RATE;
+    }
+    Roll(context) {
+        const diceValue = Math.floor(Math.random() * 6) + 1;
+        context.state.diceState.diceValue = diceValue;
+        context.broadcaster.DiceValue(diceValue);
     }
 }
 
 class FinishPhase extends PhaseBase {
     Start(context) {
         context.state.tickCounter = END_MATCH_TIMEOUT_SECONDS * MATCH_TICK_RATE;
+        context.broadcaster.MatchFinish(context.state.winnerList);
     }
     Update(context) {
+        context.state.tickCounter--;
+        if (context.state.tickCounter <= 0) {
+            context.state.matchEnd = true;
+        }
     }
 }
 
 class ResolutionPhase extends PhaseBase {
     Start(context) { }
     Update(context) {
-        const action = context.state.availableActions[context.state.selectedAction];
+        const data = context.state.availableActions[context.state.selectedAction];
+        const action = new GameAction();
+        action.FromData(data, context);
         action.Apply(context);
-        let player = context.state.players[context.state.turnState.currentPlayer];
         context.state.version++;
-        this.BroadcastAction(context.state.version, player.color, action, context.dispatcher);
+        context.broadcaster.NewAction(action);
         context.state.availableActions = undefined;
         context.state.selectedAction = -1;
+        if (context.state.players[context.state.turnState.currentPlayer].playerState.isFinished) {
+            context.broadcaster.PlayerFinish();
+        }
         if (context.state.matchFinish)
             context.state.pendingPhase = Phase.Finish;
         else
             context.state.pendingPhase = Phase.Turn;
-    }
-    BroadcastAction(version, player, action, dispatcher) {
-        const packet = JSON.stringify({
-            version: version,
-            actingPlayer: player,
-            action: action.ToObject(),
-            result: action.result.ToObject()
-        });
-        dispatcher.broadcastMessage(ServerOpCode.ActionExecuted, packet);
     }
 }
 
 class StartPhase extends PhaseBase {
     Start(context) {
         context.state.tickCounter = START_DELAY_SECONDS * MATCH_TICK_RATE;
+        context.broadcaster.LobbyStarted("");
     }
     Update(context) {
         if (context.state.tickCounter <= 0) {
             context.logger.info(`Match started with ${context.state.players.length} players.players: ${context.state.players.map((p) => p.userName).join(", ")}`);
             context.state.matchStarted = true;
+            context.state.label.matchStarted = true;
+            context.broadcaster.MatchStarted("Match Started");
+            context.broadcaster.PiecesPosition(context.state.players);
             context.state.pendingPhase = Phase.Turn;
             return;
         }
@@ -816,6 +1059,11 @@ class StartPhase extends PhaseBase {
 
 class TurnPhase extends PhaseBase {
     Start(context) {
+        if (!this.HasPlayerPieceOnBoard(context)) {
+            if (context.state.turnState.repeat <= 2) {
+                context.state.turnState.anotherChance = true;
+            }
+        }
     }
     Update(context) {
         const turnState = context.state.turnState;
@@ -838,6 +1086,7 @@ class TurnPhase extends PhaseBase {
         if (!(context.state.players[turnState.currentPlayer].playerState.lights > 0)) {
             this.FirePlayer(context.state.players, turnState.currentPlayer);
         }
+        context.broadcaster.TurnStarted(turnState.currentPlayer);
         context.state.pendingPhase = Phase.Dice;
     }
     GoToNextPlayer(playerColor) {
@@ -847,6 +1096,13 @@ class TurnPhase extends PhaseBase {
     FirePlayer(players, playerColor) {
         players[playerColor].playerState.isPresent = false;
         players[playerColor].playerState.isBot = true;
+    }
+    HasPlayerPieceOnBoard(context) {
+        for (let i = 0; i < 3; i++) {
+            if (context.state.players[context.state.turnState.currentPlayer].pieces[i].pieceState.spawned)
+                return true;
+        }
+        return false;
     }
 }
 
@@ -912,17 +1168,16 @@ class MatchContext {
     constructor(state, logger, dispatcher, nk, tick, messages) {
         this.state = state;
         this.logger = logger;
-        this.dispatcher = dispatcher;
         this.nk = nk;
         this.tick = tick;
         this.messages = messages;
+        this.broadcaster = new MatchBroadcaster(dispatcher);
     }
 }
 
 let gameFlowManager = null;
 function matchLoop(ctx, logger, nk, dispatcher, tick, state, messages) {
     const matchState = state;
-    logger.debug('Lobby match loop executed');
     if (!gameFlowManager) {
         gameFlowManager = new GameFlowManager();
     }
@@ -951,8 +1206,82 @@ function matchSignal(ctx, logger, nk, dispatcher, tick, state, data) {
     };
 }
 
+const INVENTORY_COLLECTION = "player";
+const INVENTORY_KEY = "inventory";
+function BuyAssetRpc(ctx, logger, nk, payload) {
+    const request = JSON.parse(payload);
+    if (!request.assetId) {
+        throw new Error("assetId is required");
+    }
+    const userId = ctx.userId;
+    if (!userId) {
+        throw new Error("Authentication required");
+    }
+    const records = nk.storageRead([
+        {
+            collection: INVENTORY_COLLECTION,
+            key: INVENTORY_KEY,
+            userId: userId
+        }
+    ]);
+    let inventory;
+    if (records.length === 0) {
+        inventory = CreateDefaultInventory();
+    }
+    else {
+        inventory = ReadInventory(records[0]);
+    }
+    if (IsOwned(inventory, request.assetId)) {
+        throw new Error("Asset already owned");
+    }
+    AddAsset(inventory, request.assetId);
+    nk.storageWrite([
+        {
+            collection: INVENTORY_COLLECTION,
+            key: INVENTORY_KEY,
+            userId: userId,
+            value: inventory,
+            permissionRead: 1,
+            permissionWrite: 0
+        }
+    ]);
+    return JSON.stringify(inventory);
+}
+function IsOwned(inventory, assetId) {
+    return inventory.pieces.indexOf(assetId) >= 0 ||
+        inventory.dices.indexOf(assetId) >= 0 ||
+        inventory.boards.indexOf(assetId) >= 0 ||
+        inventory.stickers.indexOf(assetId) >= 0 ||
+        inventory.phrases.indexOf(assetId) >= 0;
+}
+function AddAsset(inventory, assetId) {
+    inventory.pieces.push(assetId);
+}
+function ReadInventory(record) {
+    var _a, _b, _c, _d, _e;
+    const value = record.value;
+    return {
+        pieces: (_a = value.pieces) !== null && _a !== void 0 ? _a : [],
+        dices: (_b = value.dices) !== null && _b !== void 0 ? _b : [],
+        boards: (_c = value.boards) !== null && _c !== void 0 ? _c : [],
+        stickers: (_d = value.stickers) !== null && _d !== void 0 ? _d : [],
+        phrases: (_e = value.phrases) !== null && _e !== void 0 ? _e : []
+    };
+}
+function CreateDefaultInventory() {
+    return {
+        pieces: [...DEFAULT_ASSETS.pieces],
+        dices: [...DEFAULT_ASSETS.dices],
+        boards: [...DEFAULT_ASSETS.boards],
+        stickers: [],
+        phrases: []
+    };
+}
+
 function InitModule(ctx, logger, nk, initializer) {
     logger.info("Module is loading...");
+    initializer.registerRpc("FindOrCreateMatch", FindOrCreateMatch);
+    initializer.registerRpc("buy_asset", BuyAssetRpc);
     try {
         initializer.registerMatch("ludo", {
             matchInit,
@@ -971,22 +1300,43 @@ function InitModule(ctx, logger, nk, initializer) {
         logger.error("STACK: " + (e === null || e === void 0 ? void 0 : e.stack));
         throw e;
     }
-    logger.info("Registering matchmaker matched callback");
-    initializer.registerMatchmakerMatched(function (ctx, logger, nk, matches) {
-        const m = matches[0];
-        const config = {
-            mode: Number(m.properties["gameMode"]),
-            team: Number(m.properties["teamMode"]),
-        };
-        return CreateLudoMatch(nk, config, matches.map(m => m.presence));
-    });
     logger.info("Module loaded");
 }
 ;
 globalThis.InitModule = InitModule;
-function CreateLudoMatch(nk, config, presences) {
-    return nk.matchCreate("ludo", {
-        config: JSON.stringify(config),
-        initialPresences: JSON.stringify(presences)
+function FindOrCreateMatch(ctx, logger, nk, params) {
+    const req = JSON.parse(params);
+    const oldMatchId = req.matchId;
+    const teamMode = Number(req.teamMode);
+    const gameMode = Number(req.gameMode);
+    if (oldMatchId) {
+        const oldMatch = nk.matchGet(oldMatchId);
+        if (oldMatch) {
+            logger.info("Reconnect match found: %s", oldMatchId);
+            return JSON.stringify({
+                matchId: oldMatchId,
+                reconnect: true
+            });
+        }
+        logger.info("Old match not found: %s", oldMatchId);
+    }
+    const query = `+label.matchStarted:false ` +
+        `+label.gameMode:${gameMode} ` +
+        `+label.teamMode:${teamMode} ` +
+        `+label.presentPlayerCount:<4`;
+    const matches = nk.matchList(20, true, "ludo", 0, 3, query);
+    matches.sort((a, b) => MatchLabel.compare(a.label, b.label));
+    if (matches.length > 0) {
+        return JSON.stringify({
+            matchId: matches[0].matchId
+        });
+    }
+    const matchId = nk.matchCreate("ludo", {
+        teamMode: teamMode,
+        gameMode: gameMode,
+        creatorUserId: ctx.userId
+    });
+    return JSON.stringify({
+        matchId
     });
 }

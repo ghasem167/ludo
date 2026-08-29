@@ -8,7 +8,7 @@ export class StartPhase extends PhaseBase {
 
     public override Start(context: MatchContext): void {
         context.state.tickCounter = START_DELAY_SECONDS * MATCH_TICK_RATE;
-        context.broadcaster.LobbyStarted("Lobby Started");
+        context.broadcaster.LobbyStarted("");
     }
     public override Update(context: MatchContext): void {
 

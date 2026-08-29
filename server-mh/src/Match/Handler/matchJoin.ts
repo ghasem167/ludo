@@ -36,20 +36,17 @@ export function matchJoin(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: 
 
 				// Bot -> Human
 				Player.ConvertToHuman(bot, presence);
-
+				let newPresence = bot;
 				mState.label.presentPlayerCount++;
 
 				const broadcaster = new MatchBroadcaster(dispatcher);
 
-				// همه بازیکنان حاضر به جز بازیکن تازه‌وارد
-				const recipients = mState.players
-					.filter(p => p !== bot && p.presence)
-					.map(p => p.presence!);
+
 
 				// اطلاع به بازیکنان قبلی
 				broadcaster.PlayerAdded(
-					bot,
-					recipients
+					newPresence
+
 				);
 
 				// ارسال بازیکنان موجود به بازیکن تازه‌وارد

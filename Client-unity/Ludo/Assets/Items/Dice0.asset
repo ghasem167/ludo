@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70594f4499e9fa64689924a5d19ae36e, type: 3}
   m_Name: Dice0
   m_EditorClassIdentifier: Assembly-CSharp::DiceItem
-  Id: 
+  Id: dice_default
   DisplayName: 
   Icon: {fileID: 0}
-  PreviewPrefab: {fileID: 0}
-  GamePrefab: {fileID: 0}
+  PreviewPrefab: {fileID: 1324605756148454714, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+  GamePrefab: {fileID: 1324605756148454714, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
   Price: 0

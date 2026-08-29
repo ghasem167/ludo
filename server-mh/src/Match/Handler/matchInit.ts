@@ -37,7 +37,7 @@ export function matchInit(
 		Player.CreateBot(PlayerColor.Yellow, board),
 		Player.CreateBot(PlayerColor.Green, board)
 	];
-
+	
 	if (matchConfig.team == TeamMode.TwoVsTwo) {
 		players[0].friend = players[2];
 		players[2].friend = players[0];

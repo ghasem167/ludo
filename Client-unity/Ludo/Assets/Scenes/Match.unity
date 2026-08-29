@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &103497029
 GameObject:
   m_ObjectHideFlags: 0
@@ -306,6 +306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 048d97d06177cd04b825a87ee5dfde6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
+  playerColor: 1
   pieces:
   - {fileID: 849616406}
   - {fileID: 753907844}
@@ -354,7 +355,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &117023992
 GameObject:
   m_ObjectHideFlags: 0
@@ -399,7 +400,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &128818934
 GameObject:
   m_ObjectHideFlags: 0
@@ -491,7 +492,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &173431450
 GameObject:
   m_ObjectHideFlags: 0
@@ -583,7 +584,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &270721497
 GameObject:
   m_ObjectHideFlags: 0
@@ -628,7 +629,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &276170760
 GameObject:
   m_ObjectHideFlags: 0
@@ -676,6 +677,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 048d97d06177cd04b825a87ee5dfde6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
+  playerColor: 2
   pieces:
   - {fileID: 560957376}
   - {fileID: 782634607}
@@ -724,7 +726,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &341156376
 GameObject:
   m_ObjectHideFlags: 0
@@ -816,7 +818,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &361710710
 GameObject:
   m_ObjectHideFlags: 0
@@ -861,7 +863,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &367752361
 GameObject:
   m_ObjectHideFlags: 0
@@ -953,7 +955,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &437054396
 GameObject:
   m_ObjectHideFlags: 0
@@ -998,7 +1000,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &464702291
 GameObject:
   m_ObjectHideFlags: 0
@@ -1089,7 +1091,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &560957374
 GameObject:
   m_ObjectHideFlags: 0
@@ -1181,7 +1183,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &581013495
 GameObject:
   m_ObjectHideFlags: 0
@@ -1226,7 +1228,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &597345512
 GameObject:
   m_ObjectHideFlags: 0
@@ -1318,7 +1320,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &649445332
 GameObject:
   m_ObjectHideFlags: 0
@@ -1363,7 +1365,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &728187547
 GameObject:
   m_ObjectHideFlags: 0
@@ -1408,7 +1410,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &753907842
 GameObject:
   m_ObjectHideFlags: 0
@@ -1500,7 +1502,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &782634605
 GameObject:
   m_ObjectHideFlags: 0
@@ -1592,7 +1594,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &809654452
 GameObject:
   m_ObjectHideFlags: 0
@@ -1637,7 +1639,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &837161019
 GameObject:
   m_ObjectHideFlags: 0
@@ -1851,7 +1853,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &901372826
 GameObject:
   m_ObjectHideFlags: 0
@@ -1934,6 +1936,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 048d97d06177cd04b825a87ee5dfde6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
+  playerColor: 0
   pieces:
   - {fileID: 128818936}
   - {fileID: 1448544024}
@@ -1982,7 +1985,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &978709169
 GameObject:
   m_ObjectHideFlags: 0
@@ -2117,7 +2120,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1041298037
 GameObject:
   m_ObjectHideFlags: 0
@@ -2162,7 +2165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1049561756
 GameObject:
   m_ObjectHideFlags: 0
@@ -2207,7 +2210,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1068947517
 GameObject:
   m_ObjectHideFlags: 0
@@ -2252,7 +2255,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1077109696
 GameObject:
   m_ObjectHideFlags: 0
@@ -2297,7 +2300,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1107620340
 GameObject:
   m_ObjectHideFlags: 0
@@ -2342,7 +2345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1111204771
 GameObject:
   m_ObjectHideFlags: 0
@@ -2387,7 +2390,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1132996484
 GameObject:
   m_ObjectHideFlags: 0
@@ -2435,6 +2438,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 048d97d06177cd04b825a87ee5dfde6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
+  playerColor: 3
   pieces:
   - {fileID: 597345514}
   - {fileID: 367752363}
@@ -2483,7 +2487,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1139271183
 GameObject:
   m_ObjectHideFlags: 0
@@ -2528,7 +2532,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1159107684
 GameObject:
   m_ObjectHideFlags: 0
@@ -2573,7 +2577,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1176573650
 GameObject:
   m_ObjectHideFlags: 0
@@ -2618,7 +2622,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1197539583
 GameObject:
   m_ObjectHideFlags: 0
@@ -2663,7 +2667,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1228836052
 GameObject:
   m_ObjectHideFlags: 0
@@ -2708,7 +2712,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1229944091
 GameObject:
   m_ObjectHideFlags: 0
@@ -2753,7 +2757,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1230536748
 GameObject:
   m_ObjectHideFlags: 0
@@ -2798,7 +2802,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1231580692
 GameObject:
   m_ObjectHideFlags: 0
@@ -2843,7 +2847,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1232528256
 GameObject:
   m_ObjectHideFlags: 0
@@ -2888,7 +2892,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1237925395
 GameObject:
   m_ObjectHideFlags: 0
@@ -2933,7 +2937,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1257660502
 GameObject:
   m_ObjectHideFlags: 0
@@ -2978,7 +2982,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
+--- !u!1 &1282722459
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1282722461}
+  - component: {fileID: 1282722460}
+  m_Layer: 0
+  m_Name: Global Volume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1282722460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1282722459}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: 10fc4df2da32a41aaa32d77bc913491c, type: 2}
+--- !u!4 &1282722461
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1282722459}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1317703698
 GameObject:
   m_ObjectHideFlags: 0
@@ -3023,7 +3076,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1320371733
 GameObject:
   m_ObjectHideFlags: 0
@@ -3068,7 +3121,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1401836672
 GameObject:
   m_ObjectHideFlags: 0
@@ -3160,7 +3213,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1448544022
 GameObject:
   m_ObjectHideFlags: 0
@@ -3252,7 +3305,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1496283766
 GameObject:
   m_ObjectHideFlags: 0
@@ -3297,7 +3350,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1502609673
 GameObject:
   m_ObjectHideFlags: 0
@@ -3342,7 +3395,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1520881957
 GameObject:
   m_ObjectHideFlags: 0
@@ -3387,7 +3440,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1594553657
 GameObject:
   m_ObjectHideFlags: 0
@@ -3432,7 +3485,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1596232683
 GameObject:
   m_ObjectHideFlags: 0
@@ -3477,7 +3530,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1604076879
 GameObject:
   m_ObjectHideFlags: 0
@@ -3522,7 +3575,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1639618229
 GameObject:
   m_ObjectHideFlags: 0
@@ -3570,129 +3623,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1132996485}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1674409258
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 837161020}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.4
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.4
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.4
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -6.56
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_ConstrainProportionsScale
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      propertyPath: m_Name
-      value: Dice
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1674409261}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1674409260}
-  m_SourcePrefab: {fileID: 100100000, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
---- !u!1 &1674409259 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-  m_PrefabInstance: {fileID: 1674409258}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1674409260
+--- !u!114 &1674409260 stripped
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 9157253967332015473, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+  m_PrefabInstance: {fileID: 3133618767948907765}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1674409259}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c519d2499f297c04da06b5b6b6909d32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Dice
-  rotationSpeed: 720
-  stopDuration: 0.5
---- !u!65 &1674409261
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1674409259}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2.0233943, y: 2.0037868, z: 1.9740438}
-  m_Center: {x: -0.49537957, y: 0.40405238, z: -0.035711527}
 --- !u!4 &1674409262 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 286bb320b16bc2e43abf8582e4f62930, type: 3}
-  m_PrefabInstance: {fileID: 1674409258}
+  m_CorrespondingSourceObject: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+  m_PrefabInstance: {fileID: 3133618767948907765}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1715595123
 GameObject:
@@ -3738,7 +3683,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1723368029
 GameObject:
   m_ObjectHideFlags: 0
@@ -3783,7 +3728,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1745480534
 GameObject:
   m_ObjectHideFlags: 0
@@ -3983,7 +3928,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1810011133
 GameObject:
   m_ObjectHideFlags: 0
@@ -4028,7 +3973,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1863296162
 GameObject:
   m_ObjectHideFlags: 0
@@ -4073,7 +4018,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1865104777
 GameObject:
   m_ObjectHideFlags: 0
@@ -4165,7 +4110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1901356033
 GameObject:
   m_ObjectHideFlags: 0
@@ -4210,7 +4155,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1964685265
 GameObject:
   m_ObjectHideFlags: 0
@@ -4255,7 +4200,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1973396305
 GameObject:
   m_ObjectHideFlags: 0
@@ -4300,7 +4245,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &2009319024
 GameObject:
   m_ObjectHideFlags: 0
@@ -4345,7 +4290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &2030678761
 GameObject:
   m_ObjectHideFlags: 0
@@ -4390,7 +4335,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &2032922301
 GameObject:
   m_ObjectHideFlags: 0
@@ -4435,7 +4380,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &2058532948
 GameObject:
   m_ObjectHideFlags: 0
@@ -4607,7 +4552,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93a68f6865875624b8faf20b7001919d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cell
-  centerPosition: {x: 0, y: 0, z: 0}
+  Position: {x: 0, y: 0, z: 0}
 --- !u!1 &1601137240229223
 GameObject:
   m_ObjectHideFlags: 0
@@ -8691,6 +8636,67 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1001 &3133618767948907765
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 837161020}
+    m_Modifications:
+    - target: {fileID: 1324605756148454714, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_Name
+      value: Dice
+      objectReference: {fileID: 0}
+    - target: {fileID: 1525871137893227023, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -6.56
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813298385845407616, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
 --- !u!23 &3186736563102509801
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -16635,3 +16641,4 @@ SceneRoots:
   - {fileID: 837161020}
   - {fileID: 1401836674}
   - {fileID: 464702293}
+  - {fileID: 1282722461}

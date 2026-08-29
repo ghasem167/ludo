@@ -1,10 +1,10 @@
 import { PlayerPathConfig } from "./PlayerPathConfig";
 import { PlayerColor } from "../Enums";
 export class BoardConfig {
-    public playerPath: Record<PlayerColor, PlayerPathConfig>;
-    public numOfCellsInBoard: number;
-    public safeCellsCapability: number[];
-    public penaltyCellCapability: number[];
+    public readonly playerPath: Record<PlayerColor, PlayerPathConfig>;
+    public readonly numOfCellsInBoard: number;
+    public readonly safeCellsCapability: number[];
+    public readonly penaltyCellCapability: number[];
 
     constructor(
         playerPath: Record<PlayerColor, PlayerPathConfig>,

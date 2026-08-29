@@ -9,7 +9,7 @@ public class GameActionDto
 
     public int PieceIndex;
 
-    public List<int> CellIndexes;
+    public List<int> CellIndexes=new List<int>();
 
     public ActionResult? Result;
 }

@@ -12,11 +12,26 @@ public class PiecesPositionCommand : GameCommand
 
     public override async Task Execute()
     {
-        foreach (var piece in _pieces)
+        Board board = GameManager.Instance.BoardFactory.Board;
+
+        foreach (var pieceDto in _pieces)
         {
-            // پیدا کردن Player با PlayerColor
-            // پیدا کردن Piece با PieceId
-            // قرار دادن Piece روی Cell
+            Player player = board.GetPlayer(pieceDto.PlayerColor);
+
+            if (player == null)
+                continue;
+
+            Piece piece = player.GetPiece(pieceDto.PieceId);
+
+            if (piece == null)
+                continue;
+
+            Cell cell = board.GetCell(pieceDto.CellIndex);
+
+            if (cell == null)
+                continue;
+
+            piece.SetCurrentCell(cell);
         }
 
         await Task.CompletedTask;

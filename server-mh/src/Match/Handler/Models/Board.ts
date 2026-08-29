@@ -9,6 +9,7 @@ export class Board {
     constructor(config: BoardConfig) {
         this.config = config;
         this.cells = [];
+        this.CreateBoard();
     }// new Board(BoardConfigs.ClassicLudo())
 
     public CreateBoard(): void {
@@ -22,10 +23,13 @@ export class Board {
 
             const path = this.config.playerPath[playerColor as unknown as PlayerColor];
 
+
             for (const cellIndex of path.initialCells) {
                 this.cells[cellIndex].isInitial = true;
             }
-
+            
+            this.cells[path.startHomeEntryCell].isSafe = true;
+            
             const finalCellIndex = path.homeCells[path.homeCells.length - 1];
 
             if (finalCellIndex >= 0) {
@@ -40,5 +44,6 @@ export class Board {
         for (const cellIndex of this.config.penaltyCellCapability) {
             this.cells[cellIndex].canBecomePenaltyCell = true;
         }
+
     }
 }
