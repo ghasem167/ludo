@@ -1,49 +1,60 @@
 using System;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public abstract class ActionSelectable : MonoBehaviour
+public abstract class ActionSelectable : MonoBehaviour, IPointerClickHandler
 {
+
     private int _actionIndex;
+    private bool _isSelectable;
 
     public bool IsSelectable { get; private set; }
 
     public int ActionIndex => _actionIndex;
 
-    private GamePlayEvents gamePlayEvents;
+    protected SelectableOutline outline;
+    void Awake()
+    {
 
+        outline = GetComponent<SelectableOutline>();
+        outline?.Initialize();
+    }
     private void Start()
     {
-        if (GameManager.Instance.GamePlayHandler != null)
-            gamePlayEvents = GameManager.Instance.GamePlayHandler.GamePlayEvents;
     }
 
+    public void Enable()
+    {
+        _isSelectable = true;
+        outline?.SetOutline(true);
+    }
+
+    public void Disable()
+    {
+        _isSelectable = false;
+        outline?.SetOutline(false);
+    }
     public void SetSelectable(int actionIndex)
     {
         _actionIndex = actionIndex;
-        SetSelectable(true);
+        Enable();
+
+    }
+    public void ClearSelectable()
+    {
+        _actionIndex = -1;
+        Disable();
     }
 
-    public virtual void SetSelectable(bool selectable)
+    public void OnPointerClick(PointerEventData eventData)
     {
-        IsSelectable = selectable;
-        OnSelectableChanged(selectable);
-    }
-
-    public virtual void ClearSelectable()
-    {
-        SetSelectable(false);
-    }
-
-    public virtual void Select()
-    {
-        if (!IsSelectable)
+        if (!_isSelectable)
             return;
+        Disable();
 
-        gamePlayEvents.RaiseActionSelected(_actionIndex);
+        GameManager.Instance.GamePlayHandler.GamePlayEvents.RaiseActionSelected(_actionIndex);
 
-        ClearSelectable();
     }
 
-    protected abstract void OnSelectableChanged(bool selectable);
 }

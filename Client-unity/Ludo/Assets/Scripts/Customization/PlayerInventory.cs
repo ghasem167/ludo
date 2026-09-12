@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class PlayerInventory
@@ -13,7 +14,18 @@ public class PlayerInventory
     private readonly AssetCatalog _catalog;
     public List<string> OwnedPieceIds { get; private set; } = new();
     public List<string> OwnedDiceIds { get; private set; } = new();
-    public List<string> OwnedBoardIds { get; private set; } = new();
+    public List<string> OwnedAvatarIds { get; private set; } = new();
+    public List<string> OwnedLogoIds { get; private set; } = new();
+
+    public List<string> OwnedStickerIds { get; private set; } = new();
+    public List<string> OwnedPhraseIds { get; private set; } = new();
+
+    public class BuyAssetResponse
+    {
+        public bool Success;
+        public string Error;
+        public PlayerInventoryData Inventory;
+    }
 
     public PlayerInventory(
         GameNetworkServices network,
@@ -57,13 +69,15 @@ public class PlayerInventory
             LoadLocal();
         }
     }
- 
+
     private void Apply(PlayerInventoryData data)
     {
         OwnedPieceIds = data.Pieces ?? new List<string>();
         OwnedDiceIds = data.Dices ?? new List<string>();
-        OwnedBoardIds = data.Boards ?? new List<string>();
-        
+        OwnedAvatarIds = data.Avatars ?? new List<string>();
+        OwnedLogoIds = data.Logos ?? new List<string>();
+        OwnedStickerIds = data.Stickers ?? new List<string>();
+        OwnedPhraseIds = data.Phrases ?? new List<string>();
     }
     private void SaveLocal()
     {
@@ -71,7 +85,10 @@ public class PlayerInventory
         {
             Pieces = new List<string>(OwnedPieceIds),
             Dices = new List<string>(OwnedDiceIds),
-            Boards = new List<string>(OwnedBoardIds),
+            Avatars = new List<string>(OwnedAvatarIds),
+            Logos = new List<string>(OwnedLogoIds),
+            Stickers = new List<string>(OwnedStickerIds),
+            Phrases = new List<string>(OwnedPhraseIds),
         };
 
         string json = JsonUtility.ToJson(data);
@@ -111,7 +128,10 @@ public class PlayerInventory
     {
         OwnedPieceIds = new List<string>();
         OwnedDiceIds = new List<string>();
-        OwnedBoardIds = new List<string>();
+        OwnedAvatarIds = new List<string>();
+        OwnedLogoIds = new List<string>();
+        OwnedStickerIds = new List<string>();
+        OwnedPhraseIds = new List<string>();
     }
     public async Task<bool> BuyAsync(string assetId)
     {
@@ -123,17 +143,24 @@ public class PlayerInventory
 
         try
         {
-            string json =
-                await _network.BuyAssetAsync(assetId);
+            string json = await _network.BuyAssetAsync(assetId);
 
-            PlayerInventoryData data =
-                JsonUtility.FromJson<PlayerInventoryData>(json);
-
-            if (data == null)
+            if (string.IsNullOrEmpty(json))
                 return false;
 
-            Apply(data);
+            BuyAssetResponse response =
+                JsonConvert.DeserializeObject<BuyAssetResponse>(json);
 
+            if (response == null || !response.Success)
+            {
+                Debug.LogWarning(
+                    $"Buy failed: {response?.Error}"
+                );
+
+                return false;
+            }
+
+            Apply(response.Inventory);
             SaveLocal();
 
             return true;

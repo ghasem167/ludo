@@ -15,7 +15,6 @@ export class StartPhase extends PhaseBase {
         if (context.state.tickCounter <= 0) {
 
             context.logger.info(`Match started with ${context.state.players.length} players.players: ${context.state.players.map((p: Player) => p.userName).join(", ")}`);
-            context.state.matchStarted = true;
             context.state.label.matchStarted = true;
             context.broadcaster.MatchStarted("Match Started");
             context.broadcaster.PiecesPosition(context.state.players);

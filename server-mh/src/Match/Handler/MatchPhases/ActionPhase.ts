@@ -6,7 +6,7 @@ export class ActionPhase extends PhaseBase {
 
     public override Start(context: MatchContext): void {
         const currentPlayer =
-            context.state.players[context.state.turnState.currentPlayer];
+            context.state.players[context.state.turnState.currentPlayer!];
 
         context.state.diceState.waitingForActionSelect = true;
 
@@ -40,7 +40,7 @@ export class ActionPhase extends PhaseBase {
                 continue;
 
             const currentPlayer =
-                context.state.players[context.state.turnState.currentPlayer];
+                context.state.players[context.state.turnState.currentPlayer!];
 
             if (message.sender.userId !== currentPlayer.userId)
                 return false;

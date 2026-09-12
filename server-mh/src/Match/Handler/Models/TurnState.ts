@@ -2,24 +2,20 @@
 import { PlayerColor } from "../Enums";
 
 export class TurnState {
-    public currentPlayer: PlayerColor;
+    public currentPlayer: PlayerColor|null;
     public anotherChance: boolean;
     public hasReward: boolean;
     public hasOffer: boolean;
     public repeat: number;
 
     constructor(
-        currentPlayer: PlayerColor,
-        anotherChance: boolean = false,
-        hasReward: boolean = false,
-        hasOffer: boolean = false,
-        repeat: number = 0
+        
     ) {
-        this.currentPlayer = currentPlayer;
-        this.anotherChance = anotherChance;
-        this.hasReward = hasReward;
-        this.hasOffer = hasOffer;
-        this.repeat = repeat;
+        this.currentPlayer = null;
+        this.anotherChance = false;
+        this.hasReward = false;
+        this.hasOffer = false;
+        this.repeat = 0;
     }
 }
 

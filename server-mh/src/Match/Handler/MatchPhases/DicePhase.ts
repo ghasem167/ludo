@@ -10,7 +10,7 @@ export class DicePhase extends PhaseBase {
     public override Start(context: MatchContext): void {
         context.state.diceState.waitingForInput = true;
         context.state.diceState.waitingForAnimation = false;
-        if (context.state.players[context.state.turnState.currentPlayer].playerState.isBot)
+        if (context.state.players[context.state.turnState.currentPlayer!].playerState.isBot)
             context.state.tickCounter = DICE_BOT_TIMEOUT_SECONDS * MATCH_TICK_RATE;
         else
             context.state.tickCounter = DICE_HUMAN_TIMEOUT_SECONDS * MATCH_TICK_RATE;
@@ -76,9 +76,11 @@ export class DicePhase extends PhaseBase {
 
         if (!player)
             return;
-
+        if(!player.playerState.isBot)
+        {
         player.playerState.lights--;
         context.broadcaster.LightsChanged(player);
+        }
 
         this.SetWaitingForAnimation(context);
     }

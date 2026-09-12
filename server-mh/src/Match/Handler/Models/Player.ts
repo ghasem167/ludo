@@ -8,7 +8,7 @@ export class Player {
     public userName: string;
     public userNickName: string;
     public pieces: Piece[];
-    public readonly friend: Player | null;
+    public friend: Player | null;
     public presence: nkruntime.Presence | null;
     public playerState: PlayerState;
 

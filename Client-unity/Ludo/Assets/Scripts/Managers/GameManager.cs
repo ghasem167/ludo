@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 
+
 public class GameManager : MonoBehaviour
 {
 
@@ -13,6 +14,8 @@ public class GameManager : MonoBehaviour
     public GamePlayHandler GamePlayHandler { get; set; }
     public GameAssets GameAssets;
     public BoardFactory BoardFactory { get; set; }
+
+    public 
 
 
     void Awake()
@@ -47,7 +50,7 @@ public class GameManager : MonoBehaviour
                 Debug.Log("Scene Match Loaded");
                 BoardFactory = new BoardFactory(GameAssets);
                 BoardFactory.Build();
-                GamePlayHandler = new GamePlayHandler(NetworkService);
+                GamePlayHandler = new GamePlayHandler();
                 break;
 
         }
@@ -57,6 +60,7 @@ public class GameManager : MonoBehaviour
         switch (scene)
         {
             case GameScene.Match:
+                GamePlayHandler?.Dispose();
                 GamePlayHandler = null;
                 break;
 
@@ -69,18 +73,22 @@ public class GameManager : MonoBehaviour
         try
         {
             var session= await NetworkService.InitializeAsync();
-            ThisContext.userId=session.UserId;
-            ThisContext.userName=session.Username;
+           
+            ThisContext.userId=session?.UserId;
+            ThisContext.userName=session?.Username;
         }
         catch (Exception e)
         {
             Debug.LogError(e);
         }
+        
         await GameAssets.Initialize(NetworkService);
     }
+   
     public void  OnApplicationQuit()
     {
-        _=NetworkService.LeaveMatchAsync();
+        NetworkService?.Dispose();
+        GamePlayHandler?.Dispose();
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

@@ -16,5 +16,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 82b3022b54a39b64c85eceaa66224e6c, type: 2}
   Dices:
   - {fileID: 11400000, guid: e1757c28a64d84c42922d36d251bb96a, type: 2}
-  BoardSkins:
-  - {fileID: 11400000, guid: 54d3927b3a994874eb82a1fbd5b725a8, type: 2}
+  Stickers: []
+  Phrases: []
+  Avatars: []
+  Logos: []

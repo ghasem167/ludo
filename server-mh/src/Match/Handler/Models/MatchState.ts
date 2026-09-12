@@ -3,13 +3,11 @@ import { Board } from "./Board";
 import { Player } from "./Player";
 import { TurnState } from "./TurnState";
 import { DiceState } from "./DiceState";
-import { MatchConfig } from "./MatchConfig";
 import { MatchLabel } from "../MatchLabel";
 import { GameActionData } from "../Actions/Datas";
 
 export class MatchState {
-    public tickCounter:number=0;
-    public matchStarted:boolean;    
+    public tickCounter:number=0;  
     public board: Board;
     public players: Player[];
     public winnerList: PlayerColor[];
@@ -19,24 +17,20 @@ export class MatchState {
     public selectedAction:number=0;
     public currentPhase: Phase|null;
     public pendingPhase: Phase | null
-    public config: MatchConfig;
     public matchEnd: boolean;
     public matchFinish:boolean;
     public label:MatchLabel;
     public version: number;
 
     constructor(
-        matchStarted:boolean,
         board: Board,
-        config: MatchConfig,
         turnState: TurnState,
         diceState: DiceState,
-        players: Player[] = []
+        players: Player[] = [],
+        label: MatchLabel = new MatchLabel()
     ) {
        
-        this.matchStarted=matchStarted;
         this.board = board;
-        this.config = config;
         this.players = players;
         this.winnerList = [];
         this.turnState = turnState;
@@ -45,9 +39,7 @@ export class MatchState {
         this.pendingPhase = Phase.Start;
         this.matchEnd=false,
         this.matchFinish=false;
-        this.label=new MatchLabel();
-        this.label.teamMode=config.team;
-        this.label.gameMode=config.mode;
+        this.label=label;
         this.version = 1;
     }
 }

@@ -19,7 +19,7 @@ export function matchLeave(
 		if (!player)
 			continue;
 
-		if (mState.matchStarted) {
+		if (mState.label.matchStarted) {
 
 			// تبدیل بازیکن به Bot
 			player.playerState.isBot = true;

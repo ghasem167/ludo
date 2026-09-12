@@ -10,7 +10,8 @@ public class PlayerCustomization
     private readonly GameNetworkServices _network;
     private readonly PlayerInventory _inventory;
 
-    public int SelectedBoardId { get; private set; }
+    public int SelectedLogoId { get; private set; }
+    public int SelectedAvatarId { get; private set; }
     public int SelectedPieceId { get; private set; }
     public int SelectedDiceId { get; private set; }
 
@@ -55,10 +56,59 @@ public class PlayerCustomization
         }
     }
 
-  
+    public void SelectLogo(int logoId)
+    {
+        if (!_inventory.OwnedLogoIds.Contains(logoId.ToString()))
+        {
+            Debug.LogWarning($"Player does not own logo with ID {logoId}");
+            return;
+        }
+
+        SelectedLogoId = logoId;
+        _=_network.SelectAssetAsync(logoId.ToString(), "Logo");
+        SaveLocal();
+    }
+    public void SelectAvatar(int avatarId)
+    {
+        if (!_inventory.OwnedAvatarIds.Contains(avatarId.ToString()))
+        {
+            Debug.LogWarning($"Player does not own avatar with ID {avatarId}");
+            return;
+        }
+
+        SelectedAvatarId = avatarId;
+        _=_network.SelectAssetAsync(avatarId.ToString(), "Avatar");
+        SaveLocal();
+    }
+    public void SelectPiece(int pieceId)
+    {
+        if (!_inventory.OwnedPieceIds.Contains(pieceId.ToString()))
+        {
+            Debug.LogWarning($"Player does not own piece with ID {pieceId}");
+            return;
+        }
+
+        SelectedPieceId = pieceId;
+        _=_network.SelectAssetAsync(pieceId.ToString(), "Piece");
+        SaveLocal();
+    }
+    public void SelectDice(int diceId)
+    {
+        if (!_inventory.OwnedDiceIds.Contains(diceId.ToString()))
+        {
+            Debug.LogWarning($"Player does not own dice with ID {diceId}");
+            return;
+        }
+
+        SelectedDiceId = diceId;
+        _=_network.SelectAssetAsync(diceId.ToString(), "Dice");
+        SaveLocal();
+    }
+
     private void Apply(PlayerCustomizationData data)
     {
-        SelectedBoardId = data.BoardId;
+        SelectedLogoId = data.LogoId;
+        SelectedAvatarId = data.AvatarId;
         SelectedPieceId = data.PieceId;
         SelectedDiceId = data.DiceId;
     }
@@ -69,7 +119,8 @@ public class PlayerCustomization
         PlayerCustomizationData data =
             new PlayerCustomizationData
             {
-                BoardId = SelectedBoardId,
+                LogoId = SelectedLogoId,
+                AvatarId = SelectedAvatarId,
                 PieceId = SelectedPieceId,
                 DiceId = SelectedDiceId
             };
@@ -114,8 +165,8 @@ public class PlayerCustomization
 
         SelectedPieceId =0;
         SelectedDiceId =0;
-        SelectedBoardId =0;
-
+        SelectedLogoId =0;
+        SelectedAvatarId =0;
 
         SaveLocal();
     }

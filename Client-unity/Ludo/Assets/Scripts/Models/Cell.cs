@@ -8,20 +8,28 @@ public class Cell : ActionSelectable
 
     public Vector3 Position;
 
+    [HideInInspector]
+    public int CellIndex;
+    public SpecialCellVisual Visual;
+
     private void Start()
     {
         Position = transform.position;
-    }   
-    protected override void OnSelectableChanged(bool selectable)
+    }
+    public void SetVisual(SpecialCellVisual visual)
     {
-        // Highlight Cell
+        Visual = visual;
+        Visual.transform.SetParent(transform, true);
+        outline?.Initialize();
     }
     public async Task ActiveAsSafe()
     {
+        Visual?.Highlight();
 
     }
     public async Task ActiveAsPenalty()
     {
+        Visual?.Highlight();
 
     }
 }

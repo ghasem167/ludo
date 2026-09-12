@@ -19,15 +19,16 @@ public class TurnStartedCommand : GameCommand
         // Show turn UI / effects
         GameManager.Instance.GamePlayHandler.LastContext.CurrentPlayer = _playerColor;
         UnityEngine.Debug.Log("player color in turn:" + _playerColor);
-        if (GameManager.Instance.ThisContext.color == _playerColor)
+        if (GameManager.Instance.GamePlayHandler.LastContext.IsCurrentPlayerThisPlayer())
         {
-            GameManager.Instance.BoardFactory.Board.dice.SetSelectable(async () =>
+            GameManager.Instance.BoardFactory.Board.dice.SetSelectable(() =>
             {
-                await GameManager.Instance.NetworkService.SendDiceTouched(0);
+
                 GameManager.Instance.GamePlayHandler
                    .GamePlayEvents
                    .RaiseDiceSelected();
-            });
+            }
+            );
         }
         await Task.CompletedTask;
     }

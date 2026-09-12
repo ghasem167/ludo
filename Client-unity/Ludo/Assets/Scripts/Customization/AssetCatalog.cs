@@ -5,9 +5,14 @@ public class AssetCatalog : ScriptableObject
 {
     public PieceItem[] Pieces;
 
-    public DiceItem[] Dices;
+    public DiceItem[] Dices;  
 
-    public BoardSkinItem[] BoardSkins;
+    public StickerItem[] Stickers;
+    public PhraseItem[] Phrases;
+
+    public AvatarItem[] Avatars;
+    public LogoItem[] Logos;
+
     public GameObject GetDicePrefab(string id)
     {
         foreach (DiceItem dice in Dices)

@@ -22,7 +22,7 @@ public class BoardFactory
             Debug.LogError("Board could not be found in the scene.");
             return;
         }
-
+        Board.SetVisualBoard();
         var inventory = assets.Inventory;
 
 
@@ -147,7 +147,7 @@ public class BoardFactory
         Board.players[(int)dto.Color].userName = dto.Username;
         if (dto.Id == GameManager.Instance.ThisContext.userId)
         {
-            GameManager.Instance.ThisContext.color = dto.Color;
+            GameManager.Instance.GamePlayHandler.LastContext.thisPlayerColor = dto.Color;
         }
     }
 }

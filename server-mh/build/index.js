@@ -53,8 +53,9 @@ var ServerOpCode;
     ServerOpCode[ServerOpCode["LightsChanged"] = 8] = "LightsChanged";
     ServerOpCode[ServerOpCode["AvailableActions"] = 9] = "AvailableActions";
     ServerOpCode[ServerOpCode["NewAction"] = 10] = "NewAction";
-    ServerOpCode[ServerOpCode["PlayerFinish"] = 11] = "PlayerFinish";
-    ServerOpCode[ServerOpCode["MatchFinish"] = 12] = "MatchFinish";
+    ServerOpCode[ServerOpCode["CapturePiece"] = 11] = "CapturePiece";
+    ServerOpCode[ServerOpCode["PlayerFinish"] = 12] = "PlayerFinish";
+    ServerOpCode[ServerOpCode["MatchFinish"] = 13] = "MatchFinish";
 })(ServerOpCode || (ServerOpCode = {}));
 var ActionType;
 (function (ActionType) {
@@ -63,13 +64,6 @@ var ActionType;
     ActionType[ActionType["ActivateSafeCellAction"] = 2] = "ActivateSafeCellAction";
     ActionType[ActionType["ActivatePenaltyCellAction"] = 3] = "ActivatePenaltyCellAction";
 })(ActionType || (ActionType = {}));
-
-class MatchConfig {
-    constructor(mode = GameMode.Classic, team = TeamMode.None) {
-        this.mode = mode;
-        this.team = team;
-    }
-}
 
 class MatchLabel {
     constructor(gameMode = GameMode.Classic, teamMode = TeamMode.None) {
@@ -97,12 +91,10 @@ class MatchLabel {
 }
 
 class MatchState {
-    constructor(matchStarted, board, config, turnState, diceState, players = []) {
+    constructor(board, turnState, diceState, players = [], label = new MatchLabel()) {
         this.tickCounter = 0;
         this.selectedAction = 0;
-        this.matchStarted = matchStarted;
         this.board = board;
-        this.config = config;
         this.players = players;
         this.winnerList = [];
         this.turnState = turnState;
@@ -111,30 +103,25 @@ class MatchState {
         this.pendingPhase = Phase.Start;
         this.matchEnd = false,
             this.matchFinish = false;
-        this.label = new MatchLabel();
-        this.label.teamMode = config.team;
-        this.label.gameMode = config.mode;
+        this.label = label;
         this.version = 1;
     }
 }
 
 class TurnState {
-    constructor(currentPlayer, anotherChance = false, hasReward = false, hasOffer = false, repeatTurn = false, repeat = 0) {
-        this.currentPlayer = currentPlayer;
-        this.anotherChance = anotherChance;
-        this.hasReward = hasReward;
-        this.hasOffer = hasOffer;
-        this.repeatTurn = repeatTurn;
-        this.repeat = repeat;
+    constructor() {
+        this.currentPlayer = null;
+        this.anotherChance = false;
+        this.hasReward = false;
+        this.hasOffer = false;
+        this.repeat = 0;
     }
 }
 
 class Cell {
-    constructor(index, isInitial = false, canBecomeSafeCell = false, canBecomePenaltyCell = false, isSafe = false, isPenalty = false, isFinal = false) {
+    constructor(index, isInitial = false, isSafe = false, isPenalty = false, isFinal = false) {
         this.index = index;
         this.isInitial = isInitial;
-        this.canBecomeSafeCell = canBecomeSafeCell;
-        this.canBecomePenaltyCell = canBecomePenaltyCell;
         this.isSafe = isSafe;
         this.isPenalty = isPenalty;
         this.isFinal = isFinal;
@@ -154,16 +141,11 @@ class Board {
             for (const cellIndex of path.initialCells) {
                 this.cells[cellIndex].isInitial = true;
             }
+            this.cells[path.startHomeEntryCell].isSafe = true;
             const finalCellIndex = path.homeCells[path.homeCells.length - 1];
             if (finalCellIndex >= 0) {
                 this.cells[finalCellIndex].isFinal = true;
             }
-        }
-        for (const cellIndex of this.config.safeCellsCapability) {
-            this.cells[cellIndex].canBecomeSafeCell = true;
-        }
-        for (const cellIndex of this.config.penaltyCellCapability) {
-            this.cells[cellIndex].canBecomePenaltyCell = true;
         }
     }
 }
@@ -194,42 +176,33 @@ class BoardConfig {
 }
 
 class PieceState {
-    constructor(spawned = false, inHome = true, finished = false, hasLeftStart = false) {
-        this.spawned = spawned;
-        this.inHome = inHome;
-        this.finished = finished;
-        this.hasLeftStart = hasLeftStart;
+    constructor() {
+        this.spawned = false;
+        this.finished = false;
+        this.hasLeftStart = false;
     }
 }
 
 class Piece {
-    constructor(id, initialCell, state = new PieceState(), player) {
+    constructor(id, initialCell, player) {
         this.id = id;
         this.initialCell = initialCell;
         this.currentCell = initialCell;
-        this.pieceState = state;
+        this.pieceState = new PieceState();
         this.player = player;
-    }
-    Reset() {
-        this.currentCell = this.initialCell;
-        this.pieceState.spawned = false;
-        this.pieceState.inHome = true;
-        this.pieceState.finished = false;
-        this.pieceState.hasLeftStart = false;
     }
 }
 
 class PlayerState {
-    constructor(placeInBoard = 0, lights = 3, isPresent = true, isFinished = false, isBot = false, hasReward = false, hasOffer = false, hasSpecialSafeCell = false, hasSpecialPenaltyCell = false) {
+    constructor(placeInBoard = 0, lights = 3, isPresent = true, isFinished = false, isBot = false) {
         this.placeInBoard = placeInBoard;
         this.lights = lights;
         this.isPresent = isPresent;
         this.isFinished = isFinished;
         this.isBot = isBot;
-        this.hasReward = hasReward;
-        this.hasOffer = hasOffer;
-        this.hasSpecialSafeCell = hasSpecialSafeCell;
-        this.hasSpecialPenaltyCell = hasSpecialPenaltyCell;
+        this.hasSpecialSafeCell = true;
+        this.hasSpecialPenaltyCell = true;
+        this.spawnedBefore = false;
     }
 }
 
@@ -244,24 +217,8 @@ class Player {
         this.friend = friend;
         this.playerState = new PlayerState();
     }
-    static CreateHuman(color, presence, board) {
-        const player = new Player(0);
-        player.color = color;
-        player.userId = presence.userId;
-        player.userName = presence.username;
-        player.userNickName = presence.username;
-        player.presence = presence;
-        player.playerState.isBot = false;
-        player.playerState.isPresent = true;
-        for (let i = 0; i < 3; i++) {
-            const piece = new Piece(i, board.cells[board.config.playerPath[color].initialCells[i]], new PieceState(), player);
-            player.pieces.push(piece);
-        }
-        return player;
-    }
     static CreateBot(color, board) {
-        const player = new Player(0);
-        player.color = color;
+        const player = new Player(color);
         player.userId = "";
         player.userName = "Bot";
         player.userNickName = "Bot";
@@ -269,7 +226,7 @@ class Player {
         player.playerState.isBot = true;
         player.playerState.isPresent = false;
         for (let i = 0; i < 3; i++) {
-            const piece = new Piece(i, board.cells[board.config.playerPath[color].initialCells[i]], new PieceState(), player);
+            const piece = new Piece(i, board.cells[board.config.playerPath[player.color].initialCells[i]], player);
             player.pieces.push(piece);
         }
         return player;
@@ -309,7 +266,6 @@ const DEFAULT_ASSETS = {
 function matchInit(ctx, logger, nk, params) {
     logger.info("LUDO MATCH INIT");
     logger.info(JSON.stringify(params));
-    const matchConfig = new MatchConfig(Number(params.gameMode), Number(params.teamMode));
     const board = new Board(BoardConfig.ClassicLudo());
     const players = [
         Player.CreateBot(PlayerColor.Blue, board),
@@ -317,14 +273,14 @@ function matchInit(ctx, logger, nk, params) {
         Player.CreateBot(PlayerColor.Yellow, board),
         Player.CreateBot(PlayerColor.Green, board)
     ];
-    if (matchConfig.team == TeamMode.TwoVsTwo) {
+    const matchlabel = new MatchLabel(Number(params.gameMode), Number(params.teamMode));
+    if (matchlabel.teamMode == TeamMode.TwoVsTwo) {
         players[0].friend = players[2];
         players[2].friend = players[0];
         players[1].friend = players[3];
         players[3].friend = players[1];
     }
-    const mState = new MatchState(false, board, matchConfig, new TurnState(PlayerColor.Blue, false, false, false, false, 0), new DiceState(), players);
-    mState.label = new MatchLabel(matchConfig.mode, matchConfig.team);
+    const mState = new MatchState(board, new TurnState(), new DiceState(), players, matchlabel);
     return {
         state: mState,
         tickRate: MATCH_TICK_RATE,
@@ -343,7 +299,7 @@ function matchJoinAttempt(ctx, logger, nk, dispatcher, tick, state, presence, me
             accept: true
         };
     }
-    if (mState.matchStarted) {
+    if (mState.label.matchStarted) {
         return {
             state,
             accept: false,
@@ -397,8 +353,6 @@ class MatchBroadcaster {
     PiecesPosition(players) {
         const pieces = [];
         for (const player of players) {
-            if (player.playerState.isBot)
-                continue;
             for (const piece of player.pieces) {
                 pieces.push({
                     playerColor: player.color,
@@ -408,6 +362,14 @@ class MatchBroadcaster {
             }
         }
         this.dispatcher.broadcastMessage(ServerOpCode.PiecesPosition, JSON.stringify(pieces));
+    }
+    CapturePiece(piece) {
+        const packet = JSON.stringify({
+            playerColor: piece.player.color,
+            pieceId: piece.id,
+            cellIndex: piece.initialCell.index
+        });
+        this.dispatcher.broadcastMessage(ServerOpCode.CapturePiece, packet);
     }
     TurnStarted(playerColor) {
         this.dispatcher.broadcastMessage(ServerOpCode.TurnStarted, JSON.stringify({
@@ -438,8 +400,10 @@ class MatchBroadcaster {
         const packet = JSON.stringify(action.ToData());
         this.dispatcher.broadcastMessage(ServerOpCode.NewAction, packet);
     }
-    PlayerFinish() {
-        this.dispatcher.broadcastMessage(ServerOpCode.PlayerFinish);
+    PlayerFinish(player) {
+        this.dispatcher.broadcastMessage(ServerOpCode.PlayerFinish, JSON.stringify({
+            playerColor: player.color
+        }));
     }
 }
 
@@ -483,7 +447,7 @@ function matchLeave(ctx, logger, nk, dispatcher, tick, state, presences) {
         const player = mState.players.find(p => p.userId === presence.userId);
         if (!player)
             continue;
-        if (mState.matchStarted) {
+        if (mState.label.matchStarted) {
             player.playerState.isBot = true;
             player.playerState.isPresent = false;
             player.presence = null;
@@ -507,7 +471,6 @@ class PhaseBase {
 
 class ActionPhase extends PhaseBase {
     Start(context) {
-        context.logger.info("start action phase");
         const currentPlayer = context.state.players[context.state.turnState.currentPlayer];
         context.state.diceState.waitingForActionSelect = true;
         context.state.tickCounter = currentPlayer.playerState.isBot
@@ -577,29 +540,29 @@ class ActionResultData {
 }
 
 class ActionResult {
-    constructor(capturedEnemy = null, enteredPenaltyCell = false, pieceFinish = false, playerFinish = false, matchFinish = false, activePenaltyCell = false, activeSafeCell = false) {
-        this.capturedEnemy = null;
+    constructor(capturedEnemyColor = null, capturedEnemyIndex = null, enteredPenaltyCell = false, pieceFinish = false, playerFinish = false, matchFinish = false, activePenaltyCell = false, activeSafeCell = false) {
         this.enteredPenaltyCell = false;
         this.pieceFinish = false;
         this.playerFinish = false;
         this.matchFinish = false;
         this.activePenaltyCell = false;
         this.activeSafeCell = false;
-        this.capturedEnemy = capturedEnemy;
+        this.capturedEnemyColor = capturedEnemyColor;
+        this.capturedEnemyIndex = capturedEnemyIndex;
         this.enteredPenaltyCell = enteredPenaltyCell;
-        this.pieceFinish = pieceFinish,
-            this.playerFinish = playerFinish,
-            this.matchFinish = matchFinish,
-            this.activePenaltyCell = activePenaltyCell;
+        this.pieceFinish = pieceFinish;
+        this.playerFinish = playerFinish;
+        this.matchFinish = matchFinish;
+        this.activePenaltyCell = activePenaltyCell;
         this.activeSafeCell = activeSafeCell;
     }
     ToData() {
         const data = new ActionResultData();
-        if (this.capturedEnemy) {
+        if (this.capturedEnemyColor != null && this.capturedEnemyIndex != null) {
             data.capturedEnemyColor =
-                this.capturedEnemy.player.color;
+                this.capturedEnemyColor;
             data.capturedEnemyIndex =
-                this.capturedEnemy.id;
+                this.capturedEnemyIndex;
         }
         data.enteredPenaltyCell =
             this.enteredPenaltyCell;
@@ -628,12 +591,14 @@ class ActionResult {
             data.activePenaltyCell;
         this.activeSafeCell =
             data.activeSafeCell;
-        this.capturedEnemy = null;
-        context.logger.info(`ActionResult.FromData: capturedEnemyColor=${data.capturedEnemyColor}, capturedEnemyIndex=${data.capturedEnemyIndex}`);
-        if (data.capturedEnemyColor !== undefined &&
-            data.capturedEnemyIndex !== undefined) {
-            this.capturedEnemy =
-                context.state.players[data.capturedEnemyColor].pieces[data.capturedEnemyIndex];
+        this.capturedEnemyColor = null;
+        this.capturedEnemyIndex = null;
+        if (data.capturedEnemyColor != null &&
+            data.capturedEnemyIndex != null) {
+            this.capturedEnemyColor =
+                data.capturedEnemyColor;
+            this.capturedEnemyIndex =
+                data.capturedEnemyIndex;
         }
     }
 }
@@ -670,14 +635,23 @@ class GameAction {
             piece.currentCell = destinationCell;
         }
         piece.pieceState.hasLeftStart = true;
-        if (!this.result)
+        if (!this.result) {
+            context.logger.info('result is null');
             return;
-        if (this.result.capturedEnemy)
-            this.result.capturedEnemy.Reset();
+        }
+        if (this.result.capturedEnemyColor != null && this.result.capturedEnemyIndex != null) {
+            context.logger.info(`GameAction: ApplyMove: capturedEnemyPlayerColor=${this.result.capturedEnemyColor},capturedEnemyPieceIndex= ${this.result.capturedEnemyIndex}`);
+            const capturedEnemy = context.state.players[this.result.capturedEnemyColor]
+                .pieces[this.result.capturedEnemyIndex];
+            this.ResetPiece(capturedEnemy, context);
+            context.state.turnState.hasReward = true;
+        }
         if (this.result.enteredPenaltyCell)
-            piece.Reset();
-        if (this.result.pieceFinish)
+            this.ResetPiece(piece, context);
+        if (this.result.pieceFinish) {
+            context.state.turnState.hasReward = true;
             piece.pieceState.finished = true;
+        }
         if (this.result.playerFinish) {
             player.playerState.isFinished = true;
             context.state.winnerList.push(this.playerColor);
@@ -687,13 +661,15 @@ class GameAction {
     }
     ApplySpawn(context) {
         const player = context.state.players[this.playerColor];
+        player.playerState.spawnedBefore = true;
         const piece = player.pieces[this.pieceIndex];
         const startCell = context.state.board
             .config
-            .playerPath[this.playerColor]
+            .playerPath[player.color]
             .startHomeEntryCell;
         piece.currentCell =
             context.state.board.cells[startCell];
+        context.logger.info(`GameAction: ApplySpawn: playerColor: ${this.playerColor}, pieceIndex: ${this.pieceIndex}, currentCell: ${piece.currentCell.index}`);
         piece.pieceState.spawned = true;
     }
     ApplyActiveSafeCell(context) {
@@ -725,11 +701,37 @@ class GameAction {
             this.result.FromData(data.Result, context);
         }
     }
+    ResetPiece(piece, context) {
+        context.logger.info(`Piece: Reset: playerColor: ${piece.player.color}, pieceIndex: ${piece.id}, currentCell: ${piece.currentCell.index}, initialCell: ${piece.initialCell.index}`);
+        piece.currentCell = piece.initialCell;
+        piece.pieceState.spawned = false;
+        piece.pieceState.finished = false;
+        piece.pieceState.hasLeftStart = false;
+    }
+    Broadcast(context) {
+        context.broadcaster.NewAction(this);
+        if (this.result) {
+            if (this.result.capturedEnemyColor != null && this.result.capturedEnemyIndex != null) {
+                const capturedEnemy = context.state.players[this.result.capturedEnemyColor]
+                    .pieces[this.result.capturedEnemyIndex];
+                context.broadcaster.CapturePiece(capturedEnemy);
+            }
+            if (this.result.enteredPenaltyCell) {
+                let piece = context.state.players[this.playerColor].pieces[this.pieceIndex];
+                context.broadcaster.CapturePiece(piece);
+            }
+            if (this.result.playerFinish) {
+                let player = context.state.players[this.playerColor];
+                context.broadcaster.PlayerFinish(player);
+            }
+        }
+    }
 }
 
 class RuleEngine {
-    constructor(matchState) {
+    constructor(matchState, logger) {
         this.matchState = matchState;
+        this.logger = logger;
         this.availableActions = [];
         this.player = this.matchState.players.find(p => p.color === this.matchState.turnState.currentPlayer);
     }
@@ -737,9 +739,10 @@ class RuleEngine {
         if (!this.player)
             return;
         if (this.matchState.diceState.diceValue == 6) {
-            this.matchState.turnState.hasReward = true;
             this.CheckForSpawnPices();
-            if (this.matchState.config.mode === GameMode.Modern) {
+            this.logger.info(`gameMode=${this.matchState.label.gameMode}, Modern=${GameMode.Modern}`);
+            if (this.matchState.label.gameMode === GameMode.Modern) {
+                this.logger.info(`Rule Engine: CheckForSpecialActions`);
                 this.CheckForSpecialActions();
             }
         }
@@ -751,6 +754,7 @@ class RuleEngine {
             const spawnablePieces = this.GetSpawnablePieces();
             for (const piece of spawnablePieces) {
                 this.AddSpawnAction(piece);
+                this.logger.info(`spawnable piece: ${piece.id}, currentCell: ${piece.currentCell.index}`);
             }
         }
     }
@@ -759,75 +763,115 @@ class RuleEngine {
             return;
         if (this.player.playerState.hasSpecialSafeCell) {
             for (const cell of this.matchState.board.config.safeCellsCapability) {
-                if (this.CellIsEmpty(cell)) {
+                if (this.CellIsEmpty(cell) && !this.matchState.board.cells[cell].isSafe) {
                     this.AddActiveSafeCellAction(this.matchState.board.cells[cell]);
                 }
             }
         }
         if (this.player.playerState.hasSpecialPenaltyCell) {
             for (const cell of this.matchState.board.config.penaltyCellCapability) {
-                if (this.CellIsEmpty(cell)) {
-                    this.AddPenaltySafeCellAction(this.matchState.board.cells[cell]);
+                if (this.CellIsEmpty(cell) && !this.matchState.board.cells[cell].isPenalty) {
+                    this.AddPenaltyCellAction(this.matchState.board.cells[cell]);
                 }
             }
         }
     }
     CheckForMoveAction() {
+        var _a;
         if (!this.player)
             return;
+        this.logger.info(`CheckForMoveAction: player: ${this.player.color}, pieces:${this.player.pieces.map(p => p.pieceState.spawned).join(",")}`);
         for (const piece of this.player.pieces) {
-            if (piece.pieceState.finished)
+            if (piece.pieceState.finished || !piece.pieceState.spawned)
                 continue;
+            this.logger.info(`CheckForMoveAction: piece: ${piece.id}, currentCell: ${piece.currentCell.index},isSpawned: ${piece.pieceState.spawned}`);
             let path = this.FindPath(piece, this.matchState.diceState.diceValue);
             if (!path)
                 continue;
             let destination = null;
             destination = path[(path === null || path === void 0 ? void 0 : path.length) - 1];
-            const pieceInDestination = this.GetPieceAt(destination);
-            if (pieceInDestination) {
-                if (this.IsEnemyPiece(pieceInDestination) && !destination.isSafe) {
-                    this.AddMoveAction(piece, path, new ActionResult(pieceInDestination));
-                }
-                continue;
-            }
+            this.logger.info(`piece: ${piece.player.color}  ${piece.id} destination: ${destination === null || destination === void 0 ? void 0 : destination.index}`);
             if (destination.isFinal) {
                 let pieceFinished = true;
                 let playerFinished = this.twoPiecesOfPlayerFinish();
                 let matchFinished = false;
                 if (playerFinished && this.matchState.winnerList.length == 2)
                     matchFinished = true;
-                this.AddMoveAction(piece, path, new ActionResult(null, false, pieceFinished, playerFinished, matchFinished));
+                this.AddMoveAction(piece, path, new ActionResult(null, null, false, pieceFinished, playerFinished, matchFinished));
+                continue;
+            }
+            const pieceInDestination = this.GetPieceAt(destination);
+            this.logger.info(`pieceInDestination: ${pieceInDestination === null || pieceInDestination === void 0 ? void 0 : pieceInDestination.player.color}`);
+            if (pieceInDestination) {
+                this.logger.info(`pieceInDestination: ${pieceInDestination.player.color}`);
+                let isSafe = destination.isSafe;
+                const pieceStartCell = this.matchState.board.config.playerPath[pieceInDestination.player.color].startHomeEntryCell;
+                if (destination.index === pieceStartCell) {
+                    if (!pieceInDestination.pieceState.hasLeftStart) {
+                        isSafe = true;
+                    }
+                    else {
+                        isSafe = false;
+                    }
+                }
+                if (isSafe) {
+                    this.logger.info('destination is safe cell');
+                    continue;
+                }
+                if (pieceInDestination.player.color === this.player.color ||
+                    pieceInDestination.player.color === ((_a = this.player.friend) === null || _a === void 0 ? void 0 : _a.color)) {
+                    this.logger.info('a friendly piece is in destination');
+                    continue;
+                }
+                this.logger.info('an enemy is in destination');
+                this.AddMoveAction(piece, path, new ActionResult(pieceInDestination.player.color, pieceInDestination.id));
                 continue;
             }
             if (destination.isPenalty) {
-                this.AddMoveAction(piece, path, new ActionResult(null, true));
+                this.AddMoveAction(piece, path, new ActionResult(null, null, true));
                 continue;
             }
             this.AddMoveAction(piece, path, new ActionResult());
         }
     }
     CellIsEmpty(cell) {
-        return !this.matchState.players.some((player) => player.pieces.some((piece) => piece.currentCell === this.matchState.board.cells[cell]));
+        let cellObj = this.matchState.board.cells[cell];
+        for (const player of this.matchState.players) {
+            for (const piece of player.pieces) {
+                if (piece.currentCell.index === cellObj.index)
+                    return false;
+            }
+        }
+        return true;
     }
     AddSpawnAction(piece) {
         const action = new GameAction();
         action.actionType = ActionType.SpawnAction;
         action.playerColor = piece.player.color;
         action.pieceIndex = piece.id;
+        action.path.push(this.matchState.board.config.playerPath[piece.player.color].startHomeEntryCell);
         this.availableActions.push(action);
     }
     AddActiveSafeCellAction(cell) {
+        var _a;
         const action = new GameAction();
+        if (!this.player)
+            return;
         action.actionType =
             ActionType.ActivateSafeCellAction;
         action.path = [cell.index];
+        action.playerColor = (_a = this.player) === null || _a === void 0 ? void 0 : _a.color;
         this.availableActions.push(action);
     }
-    AddPenaltySafeCellAction(cell) {
+    AddPenaltyCellAction(cell) {
+        var _a;
         const action = new GameAction();
+        if (!this.player)
+            return;
         action.actionType =
             ActionType.ActivatePenaltyCellAction;
         action.path = [cell.index];
+        action.playerColor = (_a = this.player) === null || _a === void 0 ? void 0 : _a.color;
         this.availableActions.push(action);
     }
     AddMoveAction(piece, path, result) {
@@ -842,7 +886,7 @@ class RuleEngine {
     GetSpawnablePieces() {
         if (!this.player)
             return [];
-        return this.player.pieces.filter(piece => piece.currentCell = piece.initialCell);
+        return this.player.pieces.filter(piece => piece.pieceState.spawned === false && piece.pieceState.finished === false);
     }
     FindPath(piece, diceValue) {
         const originalCell = piece.currentCell;
@@ -853,9 +897,11 @@ class RuleEngine {
                 piece.currentCell = originalCell;
                 return null;
             }
+            this.logger.info(`FindPath: piece: ${piece.id}, currentCell: ${piece.currentCell.index}, nextCell: ${nextCell.index}`);
             path.push(nextCell);
             piece.currentCell = nextCell;
         }
+        this.logger.info(`FindPath: piece: ${piece.id}, path: ${path.map(c => c.index).join(",")}`);
         piece.currentCell = originalCell;
         return path;
     }
@@ -872,25 +918,19 @@ class RuleEngine {
             currentIndex === path.startHomeEntryCell) {
             return this.matchState.board.cells[path.homeCells[0]];
         }
-        const nextIndex = (currentIndex + 1) % this.matchState.board.config.numOfCellsInBoard;
+        const nextIndex = (currentIndex + 1) > 47 ? 12 : currentIndex + 1;
+        this.logger.info(`NextCell: piece: ${piece.id}, currentCell: ${currentIndex}, nextIndex: ${nextIndex}`);
         return this.matchState.board.cells[nextIndex];
     }
     GetPieceAt(cell) {
+        this.logger.info(`GetPieceAt: ${cell.index}`);
         for (const player of this.matchState.players) {
             for (const piece of player.pieces) {
-                if (piece.currentCell === cell)
+                if (piece.currentCell.index === cell.index)
                     return piece;
             }
         }
         return null;
-    }
-    IsEnemyPiece(piece) {
-        var _a;
-        if (piece.player === this.player)
-            return false;
-        if (piece.player === ((_a = this.player) === null || _a === void 0 ? void 0 : _a.friend))
-            return false;
-        return true;
     }
     twoPiecesOfPlayerFinish() {
         let reachedPieces = 0;
@@ -916,16 +956,13 @@ class DicePhase extends PhaseBase {
     }
     Update(context) {
         if (context.state.diceState.waitingForInput) {
-            context.logger.info("waiting for input");
             this.UpdateWaitingForInput(context);
             return;
         }
         if (context.state.diceState.waitingForAnimation) {
-            context.logger.info(" waiting for animation");
             this.UpdateWaitingForAnimation(context);
             return;
         }
-        context.logger.info(" resolve dice result start");
         this.ResolveDiceResult(context);
     }
     UpdateWaitingForInput(context) {
@@ -953,8 +990,10 @@ class DicePhase extends PhaseBase {
         const player = context.state.players.find(p => p.color === context.state.turnState.currentPlayer);
         if (!player)
             return;
-        player.playerState.lights--;
-        context.broadcaster.LightsChanged(player);
+        if (!player.playerState.isBot) {
+            player.playerState.lights--;
+            context.broadcaster.LightsChanged(player);
+        }
         this.SetWaitingForAnimation(context);
     }
     UpdateWaitingForAnimation(context) {
@@ -965,23 +1004,15 @@ class DicePhase extends PhaseBase {
         this.Roll(context);
     }
     ResolveDiceResult(context) {
-        var _a;
-        const rule = new RuleEngine(context.state);
+        const rule = new RuleEngine(context.state, context.logger);
         rule.ResolveDiceResult();
         context.state.availableActions =
             rule.availableActions.map(action => action.ToData());
         const player = context.state.players.find(p => p.color === context.state.turnState.currentPlayer);
         if (!player) {
-            context.logger.info("in resolve dice result Player is null");
             return;
         }
-        const actions = context.state.availableActions;
-        context.logger.info(`AvailableActions type: ${(_a = actions === null || actions === void 0 ? void 0 : actions.constructor) === null || _a === void 0 ? void 0 : _a.name}`);
-        if (actions) {
-            for (const action of actions) {
-                context.logger.info(`Action type: ${action.constructor.name}`);
-            }
-        }
+        context.logger.info(`ResolveDiceResult: player: ${player.color}, availableActions: ${context.state.availableActions.length}`);
         context.broadcaster.AvailableActions(player, context.state.availableActions);
         if (rule.availableActions.length === 0) {
             context.state.pendingPhase = Phase.Turn;
@@ -994,12 +1025,14 @@ class DicePhase extends PhaseBase {
     SetWaitingForAnimation(context) {
         context.state.diceState.waitingForInput = false;
         context.state.diceState.waitingForAnimation = true;
+        context.logger.info("DicePhase: Setting waiting for animation");
         context.broadcaster.Rolling();
         context.state.tickCounter = DICE_WAITING_FOR_ANIMATION * MATCH_TICK_RATE;
     }
     Roll(context) {
         const diceValue = Math.floor(Math.random() * 6) + 1;
         context.state.diceState.diceValue = diceValue;
+        context.logger.info(`DicePhase: Rolled dice value: ${diceValue}`);
         context.broadcaster.DiceValue(diceValue);
     }
 }
@@ -1023,14 +1056,12 @@ class ResolutionPhase extends PhaseBase {
         const data = context.state.availableActions[context.state.selectedAction];
         const action = new GameAction();
         action.FromData(data, context);
+        context.logger.info(`ResolutionPhase: Applying action: ${action.constructor.name} for player: ${context.state.players[context.state.turnState.currentPlayer].color}`, 'action:', 'action: ', action.actionType, 'playerColor: ', action.playerColor, 'pieceIndex: ', action.pieceIndex, 'path: ', action.path);
         action.Apply(context);
         context.state.version++;
-        context.broadcaster.NewAction(action);
+        action.Broadcast(context);
         context.state.availableActions = undefined;
         context.state.selectedAction = -1;
-        if (context.state.players[context.state.turnState.currentPlayer].playerState.isFinished) {
-            context.broadcaster.PlayerFinish();
-        }
         if (context.state.matchFinish)
             context.state.pendingPhase = Phase.Finish;
         else
@@ -1046,7 +1077,6 @@ class StartPhase extends PhaseBase {
     Update(context) {
         if (context.state.tickCounter <= 0) {
             context.logger.info(`Match started with ${context.state.players.length} players.players: ${context.state.players.map((p) => p.userName).join(", ")}`);
-            context.state.matchStarted = true;
             context.state.label.matchStarted = true;
             context.broadcaster.MatchStarted("Match Started");
             context.broadcaster.PiecesPosition(context.state.players);
@@ -1059,11 +1089,17 @@ class StartPhase extends PhaseBase {
 
 class TurnPhase extends PhaseBase {
     Start(context) {
-        if (!this.HasPlayerPieceOnBoard(context)) {
-            if (context.state.turnState.repeat <= 2) {
-                context.state.turnState.anotherChance = true;
-            }
+        if (context.state.turnState.currentPlayer === null) {
+            context.state.turnState.currentPlayer = PlayerColor.Blue;
+            return;
         }
+        context.logger.info(`TurnPhase: currentPlayer: ${context.state.turnState.currentPlayer}, repeat: ${context.state.turnState.repeat}, anotherChance: ${context.state.turnState.anotherChance}, hasReward: ${context.state.turnState.hasReward}, hasOffer: ${context.state.turnState.hasOffer}`);
+        if (!context.state.players[context.state.turnState.currentPlayer].playerState.spawnedBefore &&
+            context.state.turnState.repeat < 2) {
+            context.state.turnState.anotherChance = true;
+        }
+        if (context.state.diceState.diceValue == 6)
+            context.state.turnState.hasReward = true;
     }
     Update(context) {
         const turnState = context.state.turnState;
@@ -1082,10 +1118,15 @@ class TurnPhase extends PhaseBase {
                 turnState.currentPlayer = this.GoToNextPlayer(turnState.currentPlayer);
                 turnState.repeat = 0;
             }
-        } while (context.state.players[turnState.currentPlayer].playerState.isFinished && context.state.winnerList.length < 3);
+        } while (context.state.players[turnState.currentPlayer].playerState.isFinished &&
+            context.state.winnerList.length < 3);
         if (!(context.state.players[turnState.currentPlayer].playerState.lights > 0)) {
-            this.FirePlayer(context.state.players, turnState.currentPlayer);
+            context.state.label.presentPlayerCount--;
+            if (context.state.label.presentPlayerCount == 0) {
+                context.logger.info("TurnPhase: All players are fired, match ended");
+            }
         }
+        context.logger.info(`TurnPhase: currentPlayer: ${turnState.currentPlayer}, repeat: ${turnState.repeat}, anotherChance: ${turnState.anotherChance}, hasReward: ${turnState.hasReward}, hasOffer: ${turnState.hasOffer}`);
         context.broadcaster.TurnStarted(turnState.currentPlayer);
         context.state.pendingPhase = Phase.Dice;
     }
@@ -1096,13 +1137,8 @@ class TurnPhase extends PhaseBase {
     FirePlayer(players, playerColor) {
         players[playerColor].playerState.isPresent = false;
         players[playerColor].playerState.isBot = true;
-    }
-    HasPlayerPieceOnBoard(context) {
-        for (let i = 0; i < 3; i++) {
-            if (context.state.players[context.state.turnState.currentPlayer].pieces[i].pieceState.spawned)
-                return true;
-        }
-        return false;
+        players[playerColor].presence = null;
+        players[playerColor].playerState.lights = 0;
     }
 }
 
@@ -1278,10 +1314,83 @@ function CreateDefaultInventory() {
     };
 }
 
+const LoadInventory = (ctx, logger, nk, payload) => {
+    const userId = ctx.userId;
+    if (userId === null || userId === undefined) {
+        throw new Error("User not authenticated");
+    }
+    const result = nk.storageRead([
+        {
+            collection: "player_inventory",
+            key: "inventory",
+            userId
+        }
+    ]);
+    let inventory;
+    if (result.length > 0) {
+        inventory = result[0].value;
+    }
+    else {
+        inventory = {
+            Pieces: ["piece_default"],
+            Dices: ["dice_default"],
+            Boards: ["board_default"]
+        };
+        nk.storageWrite([
+            {
+                collection: "player_inventory",
+                key: "inventory",
+                userId,
+                value: inventory,
+                permissionRead: 1,
+                permissionWrite: 0
+            }
+        ]);
+    }
+    return JSON.stringify(inventory);
+};
+const LoadCustomization = (ctx, logger, nk, payload) => {
+    const userId = ctx.userId;
+    if (userId === null || userId === undefined) {
+        throw new Error("User not authenticated");
+    }
+    const result = nk.storageRead([
+        {
+            collection: "player_customization",
+            key: "customization",
+            userId
+        }
+    ]);
+    let customization;
+    if (result.length > 0) {
+        customization = result[0].value;
+    }
+    else {
+        customization = {
+            PieceId: 0,
+            DiceId: 0,
+            BoardId: 0,
+        };
+        nk.storageWrite([
+            {
+                collection: "player_customization",
+                key: "customization",
+                userId,
+                value: customization,
+                permissionRead: 1,
+                permissionWrite: 0
+            }
+        ]);
+    }
+    return JSON.stringify(customization);
+};
+
 function InitModule(ctx, logger, nk, initializer) {
     logger.info("Module is loading...");
     initializer.registerRpc("FindOrCreateMatch", FindOrCreateMatch);
     initializer.registerRpc("buy_asset", BuyAssetRpc);
+    initializer.registerRpc("LoadInventory", LoadInventory);
+    initializer.registerRpc("LoadCustomization", LoadCustomization);
     try {
         initializer.registerMatch("ludo", {
             matchInit,

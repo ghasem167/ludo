@@ -10,9 +10,28 @@ public class GamePlayHandler : IDisposable
     public GamePlayContext LastContext { get; private set; }
     public CommandHandler CommandHandler;
     private GameNetworkServices NetworkServices;
+    private ServerMatchHandler serverMatchHandler;
+    private Ludo.Offline.MatchHandler matchHandler;
+
+    public SelectionManager SelectionManager { get; private set; } = new SelectionManager();
+    public GamePlayHandler()
+    {
+        LastContext = new GamePlayContext();
+        LastContext.CurrentPlayMode = PlayMode.Offline;
+        GamePlayEvents = new GamePlayEvents();
+
+        GameObject commandHandlerObject =
+            new GameObject("CommandHandler");
+
+        CommandHandler =
+            commandHandlerObject.AddComponent<CommandHandler>();
+        CreateOfflineMatch();
+        SubscribeGamePlayEvents();
+    }
     public GamePlayHandler(GameNetworkServices networkServices)
     {
         LastContext = new GamePlayContext();
+        LastContext.CurrentPlayMode = PlayMode.Online;
         GamePlayEvents = new GamePlayEvents();
 
         GameObject commandHandlerObject =
@@ -21,27 +40,49 @@ public class GamePlayHandler : IDisposable
         CommandHandler =
             commandHandlerObject.AddComponent<CommandHandler>();
         NetworkServices = networkServices;
-        CreateOnlineMatch();
+        CreateOnlineMatch(TeamMode.None, GameMode.Modern);
         SubscribeGamePlayEvents();
     }
-
-    private async void CreateOnlineMatch()
+    private async void CreateOfflineMatch()
     {
 
-        NetworkServices.SetCommandHandler(CommandHandler);
         await Task.Delay(1000);
-        var response = await NetworkServices.FindOrCreateMatch(TeamMode.None, GameMode.Classic);
-        await NetworkServices.JoinMatch();
+        CreateOfflineMatch(TeamMode.None, GameMode.Modern, PlayerColor.Blue);
     }
-    private void CreateOfflineMatch()
+    private async void CreateOnlineMatch(TeamMode teamMode, GameMode gameMode)
     {
 
+        await Task.Delay(1000);
+        var response = await NetworkServices.FindOrCreateMatch(teamMode, gameMode);
+        Debug.Log("Response of Match Create Requeste: " + response);
+        await NetworkServices.JoinMatch();
+        serverMatchHandler = new ServerMatchHandler(NetworkServices, CommandHandler);
+
     }
+    private void CreateOfflineMatch(TeamMode teamMode = TeamMode.None, GameMode gameMode = GameMode.Modern, PlayerColor playerColor = PlayerColor.Blue)
+    {
+        Debug.Log("Creating Offline Match");
+
+        matchHandler = new Ludo.Offline.MatchHandler(
+            CommandHandler,
+            gameMode,
+            teamMode
+        );
+        CommandHandler.Enqueue(new PlayerAddedCommand(new PlayerDto
+        {
+            Id = "offline_player_1",
+            Username = "Player 1",
+            Color = playerColor,
+        }));
+        _ = matchHandler.RunMatchLoop();
+    }
+
+
     private void SubscribeGamePlayEvents()
     {
         GamePlayEvents.ActionSelected += OnActionSelected;
 
-        GamePlayEvents.DiceSelected -= OnDiceSelected;
+        GamePlayEvents.DiceSelected += OnDiceSelected;
     }
     private void UnsubscribeGamePlayEvents()
     {
@@ -51,9 +92,9 @@ public class GamePlayHandler : IDisposable
     }
     private void OnActionSelected(int actionIndex)
     {
-        if (NetworkServices.IsOnline)
+        if (LastContext.CurrentPlayMode == PlayMode.Online)
         {
-            _ = NetworkServices
+            _ = serverMatchHandler
                 .SendActionSelected(actionIndex);
         }
         else
@@ -63,9 +104,9 @@ public class GamePlayHandler : IDisposable
     }
     private async void OnDiceSelected()
     {
-        if (NetworkServices.IsOnline)
+        if (LastContext.CurrentPlayMode == PlayMode.Online)
         {
-            await NetworkServices.SendRollDice();
+            await serverMatchHandler.SendRollDice();
             return;
         }
 
@@ -83,5 +124,7 @@ public class GamePlayHandler : IDisposable
     public void Dispose()
     {
         UnsubscribeGamePlayEvents();
+        matchHandler?.Dispose();
     }
+
 }

@@ -13,7 +13,7 @@ export function matchJoinAttempt (ctx: nkruntime.Context, logger: nkruntime.Logg
 		};
 	}
 
-	if (mState.matchStarted) {
+	if (mState.label.matchStarted) {
 		return {
 			state,
 			accept: false,

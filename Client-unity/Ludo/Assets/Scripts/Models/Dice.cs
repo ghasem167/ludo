@@ -15,6 +15,8 @@ public class Dice : MonoBehaviour, IPointerClickHandler
     private Quaternion initialRotation;
     private bool isRolling;
     private Coroutine stopCoroutine;
+
+    private  SelectableOutline outline;
     private readonly Dictionary<int, Vector3> faceDirections = new()
     {
         { 1, Vector3.down },
@@ -24,14 +26,17 @@ public class Dice : MonoBehaviour, IPointerClickHandler
         { 5, Vector3.back },
         { 6, Vector3.up }
     };
+   
     public void Enable()
     {
         _isSelectable = true;
+        outline?.SetOutline(true);
     }
 
     public void Disable()
     {
         _isSelectable = false;
+        outline?.SetOutline(false);
     }
     public void SetSelectable(Action onSelected = null)
     {
@@ -42,6 +47,7 @@ public class Dice : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        Debug.Log("Dice Clicked");
         if (!_isSelectable)
             return;
         StartRolling();
@@ -51,6 +57,9 @@ public class Dice : MonoBehaviour, IPointerClickHandler
     private void Awake()
     {
         initialRotation = transform.rotation;
+        
+        outline = GetComponent<SelectableOutline>();
+        outline?.Initialize();
     }
     private void Update()
     {

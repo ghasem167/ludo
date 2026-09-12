@@ -9,10 +9,7 @@ public class Piece : ActionSelectable
     public int index;
     private GameObject _modelInstance;
     private Cell _currentCell;
-    protected override void OnSelectableChanged(bool selectable)
-    {
-        // Highlight Piece
-    }
+  
     public async Task Spawn(Cell startCell)
     {
 

@@ -7,8 +7,10 @@ import { matchTerminate } from "./Match/Handler/matchTerminate";
 import { matchSignal } from "./Match/Handler/matchSignal";
 import { GameMode, TeamMode } from "./Match/Handler/Enums";
 import { MatchLabel } from "./Match/Handler/MatchLabel";
-import { BuyAssetRpc } from "./RPC/inventory";
-import { LoadCustomization, LoadInventory } from "./RPC/PlayerAssets";
+import { BuyAssetRpc } from "./Match/RPC/inventory";
+import { LoadCustomization, LoadInventory } from "./Match/RPC/inventory";
+import { InitializeNewUser } from "./Match/Hooks/InitializeNewUser";
+import { GetDiamondBalanceRpc } from "./Match/RPC/WalletRpcs";
 function InitModule(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
@@ -27,15 +29,27 @@ function InitModule(
         BuyAssetRpc
     );
     initializer.registerRpc(
-    "LoadInventory",
-    LoadInventory
-);
+        "LoadInventory",
+        LoadInventory
+    );
 
-initializer.registerRpc(
-    "LoadCustomization",
-    LoadCustomization
-);
+    initializer.registerRpc(
+        "LoadCustomization",
+        LoadCustomization
+    );
 
+    initializer.registerRpc(
+        "get_diamond_balance",
+        GetDiamondBalanceRpc
+    );
+
+    // =========================
+    // REGISTER HOOKS
+    // =========================
+
+    initializer.registerAfterAuthenticateDevice(
+        InitializeNewUser
+    );
     // =========================
     // MATCH HANDLER
     // =========================

@@ -65,3 +65,11 @@ public enum TeamMode
     None = 0,
     TwoVsTwo = 1
 }
+public enum Phase {
+    Start = 0,
+    Turn = 1,
+    Dice = 2,
+    Action = 3,
+    Resolution = 4,
+    Finish = 5
+}

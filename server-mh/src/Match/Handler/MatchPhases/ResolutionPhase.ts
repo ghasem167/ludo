@@ -17,7 +17,7 @@ export class ResolutionPhase extends PhaseBase {
         const action = new GameAction();
 
         action.FromData(data, context);
-        context.logger.info(`ResolutionPhase: Applying action: ${action.constructor.name} for player: ${context.state.players[context.state.turnState.currentPlayer].color}`, 'action:', 'action: ', action.actionType, 'playerColor: ', action.playerColor, 'pieceIndex: ', action.pieceIndex, 'path: ', action.path);
+        context.logger.info(`ResolutionPhase: Applying action: ${action.constructor.name} for player: ${context.state.players[context.state.turnState.currentPlayer!].color}`, 'action:', 'action: ', action.actionType, 'playerColor: ', action.playerColor, 'pieceIndex: ', action.pieceIndex, 'path: ', action.path);
         action.Apply(context);
 
         context.state.version++;

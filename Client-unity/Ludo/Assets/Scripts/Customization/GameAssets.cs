@@ -24,4 +24,6 @@ public class GameAssets
         Customization = new PlayerCustomization(_networkServices, Inventory);
         await Customization.InitializeAsync();
     }
+
+ 
 }

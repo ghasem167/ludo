@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEngine;
 
 
 public class AvailableActionCommand : GameCommand
@@ -14,7 +15,11 @@ public class AvailableActionCommand : GameCommand
 
     public override Task Execute()
     {
-
+       if(!GameManager.Instance.GamePlayHandler.LastContext.IsCurrentPlayerThisPlayer())
+        {
+            return Task.CompletedTask;
+        }
+       
         for (int i = 0; i < _availableActions.Count; i++)
         {
             var action = _availableActions[i];
@@ -45,6 +50,7 @@ public class AvailableActionCommand : GameCommand
 
 
             obj?.SetSelectable(i);
+            GameManager.Instance.GamePlayHandler.SelectionManager.AddToList(obj);
         }
 
         return Task.CompletedTask;

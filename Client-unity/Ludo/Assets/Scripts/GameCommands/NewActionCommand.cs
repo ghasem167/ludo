@@ -16,7 +16,7 @@ public class NewActionCommand : GameCommand
     public override async Task Execute()
     {
         Board board = GameManager.Instance.BoardFactory.Board;
-
+        GameManager.Instance.GamePlayHandler.SelectionManager.ClearAll();
         switch (selectedAction.Type)
         {
             case GameActionType.MoveAction:
@@ -25,7 +25,6 @@ public class NewActionCommand : GameCommand
                     selectedAction.PlayerColor,
                     selectedAction.PieceIndex);
 
-                piece.ClearSelectable();
 
                 await piece.MoveAlong(
                     board.GetCells(selectedAction.CellIndexes));
@@ -39,7 +38,6 @@ public class NewActionCommand : GameCommand
                     selectedAction.PlayerColor,
                     selectedAction.PieceIndex);
 
-                piece.ClearSelectable();
 
                 Cell startCell =
                     board.GetCell(selectedAction.CellIndexes[0]);
@@ -54,7 +52,6 @@ public class NewActionCommand : GameCommand
                 Cell cell =
                     board.GetCell(selectedAction.CellIndexes[0]);
 
-                cell.ClearSelectable();
 
                 await cell.ActiveAsSafe();
 
@@ -66,7 +63,6 @@ public class NewActionCommand : GameCommand
                 Cell cell =
                     board.GetCell(selectedAction.CellIndexes[0]);
 
-                cell.ClearSelectable();
 
                 await cell.ActiveAsPenalty();
 

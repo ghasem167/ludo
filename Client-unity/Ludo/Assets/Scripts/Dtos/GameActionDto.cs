@@ -11,5 +11,5 @@ public class GameActionDto
 
     public List<int> CellIndexes=new List<int>();
 
-    public ActionResult? Result;
+    //public ActionResult? Result;
 }

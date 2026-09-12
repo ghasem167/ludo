@@ -8,6 +8,8 @@ public class Board : MonoBehaviour
     private Cell[] cells;
 
     public Cell[] Cells => cells;
+
+    public VisualBoard visualBoard;
     public Player[] players;
 
     public Dice dice;
@@ -48,12 +50,12 @@ public class Board : MonoBehaviour
     private void Awake()
     {
 
-       
+
 
     }
     public Cell GetCell(int index)
     {
-        
+
         return cells[index];
     }
     public Piece GetPiece(PlayerColor color, int pieceIndex)
@@ -81,6 +83,17 @@ public class Board : MonoBehaviour
         }
 
         return null;
+    }
+
+    public void SetVisualBoard()
+    {
+        foreach (SpecialCellVisual visual in visualBoard.GetSpecialCellVisual())
+        {
+            Cell cell = GetCell(visual.CellIndex);
+
+            if (cell != null)
+                cell.SetVisual(visual);
+        }
     }
 
 

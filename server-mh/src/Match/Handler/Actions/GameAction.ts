@@ -70,9 +70,8 @@ export class GameAction {
         if (this.result.enteredPenaltyCell)
             this.ResetPiece(piece, context);
 
-        if (this.result.pieceFinish)
-        {
-            
+        if (this.result.pieceFinish) {
+
             context.state.turnState.hasReward = true;
             piece.pieceState.finished = true;
         }
@@ -117,6 +116,7 @@ export class GameAction {
             ];
 
         cell.isSafe = true;
+        context.state.players[this.playerColor].playerState.hasSpecialSafeCell = false;
     }
     private ApplyActivatePenaltyCell(
         context: MatchContext
@@ -128,6 +128,7 @@ export class GameAction {
             ];
 
         cell.isPenalty = true;
+        context.state.players[this.playerColor].playerState.hasSpecialPenaltyCell = false;
     }
     public ToData(): GameActionData {
 
@@ -185,13 +186,11 @@ export class GameAction {
                         .pieces[this.result.capturedEnemyIndex];
                 context.broadcaster.CapturePiece(capturedEnemy);
             }
-            if(this.result.enteredPenaltyCell)
-            {
+            if (this.result.enteredPenaltyCell) {
                 let piece = context.state.players[this.playerColor].pieces[this.pieceIndex];
                 context.broadcaster.CapturePiece(piece);
             }
-            if(this.result.playerFinish)
-            {
+            if (this.result.playerFinish) {
                 let player = context.state.players[this.playerColor];
                 context.broadcaster.PlayerFinish(player);
             }

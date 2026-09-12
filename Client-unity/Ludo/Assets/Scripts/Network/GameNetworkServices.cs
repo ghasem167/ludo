@@ -1,20 +1,27 @@
 using Nakama;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
-public class GameNetworkServices
+public class GameNetworkServices : IDisposable
 {
+    public void Dispose()
+    {
+        _ = LeaveMatchAsync();
+        _socket?.CloseAsync();
+        _client = null;
+        _session = null;
+        _match = null;
+    }
+
 
     private IClient _client;
     private ISocket _socket;
     private ISession _session;
     private IMatch _match;
-    private CommandHandler commandHandler;
+
+    public ISocket Socket => _socket;
+    public IMatch Match => _match;
     public bool IsOnline
     {
         get
@@ -35,10 +42,6 @@ public class GameNetworkServices
 
     }
 
-    public void SetCommandHandler(CommandHandler _commandHandler)
-    {
-        commandHandler = _commandHandler;
-    }
 
     public async Task<ISession> InitializeAsync()
     {
@@ -88,22 +91,12 @@ public class GameNetworkServices
     }
     private void RegisterEvents()
     {
-        _socket.ReceivedMatchState += OnMatchState;
-        _socket.ReceivedMatchPresence += OnMatchPresence;
+        //_socket.ReceivedMatchState += OnMatchState;
+        //_socket.ReceivedMatchPresence += OnMatchPresence;
         //_socket.Closed += OnSocketClosed;
         //_socket.Connected += OnSocketConnected;
     }
-    private void OnMatchState(IMatchState message)
-    {
-        var command = Interpret(message);
-        commandHandler.Enqueue(command);
-    }
 
-    private void OnMatchPresence(IMatchPresenceEvent message)
-    {
-        Debug.Log("Match Presence Event Received");
-        // Handle match presence events here
-    }
     public async Task<PlayerInventoryData> LoadInventoryAsync()
     {
         try
@@ -160,74 +153,7 @@ public class GameNetworkServices
         }
     }
 
-    public GameCommand Interpret(IMatchState message)
-    {
 
-        switch ((opcode)message.OpCode)
-        {
-            case opcode.LobbyStarted:
-                Debug.Log("Lobby started");
-                return new LobbyStartedCommand();
-
-            case opcode.PlayerAdded:
-                Debug.Log("player added");
-                return BuildPlayerAdded(message);
-
-            case opcode.Players:
-                Debug.Log("players");
-                return BuildPlayers(message);
-
-            case opcode.MatchStarted:
-                Debug.Log("match started");
-                return new MatchStartedCommand();
-
-            case opcode.PiecesPosition:
-                Debug.Log("pieceposition");
-                return BuildPiecePositionOnBoardCommand(message);
-
-            case opcode.LightsChanged:
-                Debug.Log("ligh changed");
-                return BuildLightsChanged(message);
-
-            case opcode.TurnStarted:
-                Debug.Log("turn started");
-                return BuildTurnStartedCommand(message);
-
-            case opcode.Rolling:
-                Debug.Log("Rolling");
-                return new RollingCommand();
-
-
-            case opcode.DiceValue:
-                Debug.Log("dice value");
-                return BuildDiceValueCommand(message);
-
-            case opcode.AvailableActions:
-                Debug.Log("available actions");
-                return BuildAvailableActionCommand(message);
-
-            case opcode.NewAction:
-                Debug.Log("new action");
-                return BuildNewActionCommand(message);
-
-            case opcode.CapturePiece:
-                return BuildCapturePieceCommand(message);
-
-            case opcode.PlayerFinish:
-                Debug.Log("player finished");
-                return new PlayerFinishedCommand();
-
-            case opcode.MatchFinish:
-                Debug.Log("match finished");
-                return BuildMatchFinished(message);
-
-
-
-            default:
-                Debug.Log("not impolement message");
-                throw new NotImplementedException();
-        }
-    }
 
     public async Task<FindOrCreateMatchResult> FindOrCreateMatch(
     TeamMode teamMode,
@@ -326,95 +252,6 @@ public class GameNetworkServices
             SavedMatchIdKey
         );
     }
-    private GameCommand BuildLobbyStarted(IMatchState message)
-    {
-        var dto = Deserialize<LobbyStartedDto>(message);
-
-        return new LobbyStartedCommand();
-    }
-    private GameCommand BuildPlayerAdded(IMatchState message)
-    {
-        var dto = Deserialize<PlayerDto>(message);
-
-        return new PlayerAddedCommand(dto);
-    }
-    private GameCommand BuildPlayers(IMatchState message)
-    {
-        var dto = Deserialize<PlayersDto>(message);
-
-        return new PlayersCommand(dto.Players);
-    }
-    private GameCommand BuildMatchStarted(IMatchState message)
-    {
-        Debug.Log("match started");
-        var dto = Deserialize<MatchStartedDto>(message);
-
-        return new MatchStartedCommand();
-    }
-    private GameCommand BuildPiecePositionOnBoardCommand(IMatchState message)
-    {
-        var dto = Deserialize<List<PiecePositionDto>>(message);
-        return new PiecesPositionCommand(dto);
-
-    }
-    private GameCommand BuildMatchFinished(IMatchState message)
-    {
-        var dto = Deserialize<MatchFinishedDto>(message);
-
-        return new MatchFinishedCommand(dto.WinnerList);
-    }
-    private GameCommand BuildLightsChanged(IMatchState message)
-    {
-        var dto = Deserialize<LightsChangedDto>(message);
-        return new LightsChangedCommand(
-         dto.Player,
-         dto.numOfLights
-     );
-
-
-    }
-
-    private GameCommand BuildTurnStartedCommand(IMatchState message)
-    {
-        var dto = Deserialize<TurnStartedDto>(message);
-
-        return new TurnStartedCommand(dto.PlayerColor);
-    }
-
-    private GameCommand BuildDiceValueCommand(IMatchState message)
-    {
-        var diceValue = Deserialize<int>(message);
-
-        return new DiceValueCommand(
-            diceValue
-        );
-    }
-    private GameCommand BuildAvailableActionCommand(IMatchState message)
-    {
-        var actions = Deserialize<List<GameActionDto>>(message);
-
-        return new AvailableActionCommand(actions);
-    }
-
-    private GameCommand BuildNewActionCommand(IMatchState message)
-    {
-        var dto = Deserialize<GameActionDto>(message);
-
-        return new NewActionCommand(dto);
-    }
-    private GameCommand BuildCapturePieceCommand(IMatchState message)
-    {
-        var dto = Deserialize<PiecePositionDto>(message);
-
-        return new CapturePieceCommand(dto);
-    }
-
-
-    private T Deserialize<T>(IMatchState message)
-    {
-        string json = Encoding.UTF8.GetString(message.State);
-        return JsonConvert.DeserializeObject<T>(json);
-    }
     public async Task<string> BuyAssetAsync(string assetId)
     {
         var payload = new
@@ -454,37 +291,29 @@ public class GameNetworkServices
         return response.Payload;
     }
 
-    public async Task SendRollDice()
+    public async Task<DiamondBalanceData> LoadDiamondBalanceAsync()
     {
-        if (!IsOnline)
-            return;
-
-        await _socket.SendMatchStateAsync(
-            _match.Id,
-            (long)ClientOpCode.RollDice,
-            string.Empty);
-    }
-    public async Task SendActionSelected(int actionIndex)
-    {
-        if (!IsOnline)
-            return;
-
-        byte[] data = System.Text.Encoding.UTF8.GetBytes(
-            actionIndex.ToString());
-
-        await _socket.SendMatchStateAsync(
-            _match.Id,
-            (long)ClientOpCode.SelectAction,
-            data);
-    }
-     public async Task SendDiceTouched(int actionIndex)
-    {
-        if (!IsOnline)
-            return;
-
-        await _socket.SendMatchStateAsync(
-            _match.Id,
-            (long)ClientOpCode.RollDice,""
+        try
+        {
+            var response = await _client.RpcAsync(
+                _session,
+                "get_diamond_balance",
+                "{}"
             );
+
+            if (string.IsNullOrEmpty(response.Payload))
+                return null;
+
+            return JsonConvert.DeserializeObject<DiamondBalanceData>(
+                response.Payload
+            );
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            return null;
+        }
     }
+
+
 }

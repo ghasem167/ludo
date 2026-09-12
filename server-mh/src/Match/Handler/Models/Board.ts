@@ -37,13 +37,6 @@ export class Board {
             }
         }
 
-        for (const cellIndex of this.config.safeCellsCapability) {
-            this.cells[cellIndex].canBecomeSafeCell = true;
-        }
-
-        for (const cellIndex of this.config.penaltyCellCapability) {
-            this.cells[cellIndex].canBecomePenaltyCell = true;
-        }
 
     }
 }

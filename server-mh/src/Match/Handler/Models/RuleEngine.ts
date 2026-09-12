@@ -29,9 +29,13 @@ export class RuleEngine {
             return;
 
         if (this.matchState.diceState.diceValue == 6) {
-           
+
             this.CheckForSpawnPices();
-            if (this.matchState.config.mode === GameMode.Modern) {
+            this.logger.info(
+                `gameMode=${this.matchState.label.gameMode}, Modern=${GameMode.Modern}`
+            );
+            if (this.matchState.label.gameMode === GameMode.Modern) {
+                this.logger.info(`Rule Engine: CheckForSpecialActions`);
                 this.CheckForSpecialActions();
             }
 
@@ -44,7 +48,7 @@ export class RuleEngine {
     private CheckForSpawnPices() {
 
 
-        const startCell = this.matchState.board.config.playerPath[this.matchState.turnState.currentPlayer].startHomeEntryCell;
+        const startCell = this.matchState.board.config.playerPath[this.matchState.turnState.currentPlayer!].startHomeEntryCell;
         if (this.CellIsEmpty(startCell)) {
             const spawnablePieces = this.GetSpawnablePieces()
             for (const piece of spawnablePieces) {
@@ -64,7 +68,7 @@ export class RuleEngine {
         if (this.player.playerState.hasSpecialSafeCell) {
 
             for (const cell of this.matchState.board.config.safeCellsCapability) {
-                if (this.CellIsEmpty(cell)) {
+                if (this.CellIsEmpty(cell) && !this.matchState.board.cells[cell].isSafe) {
                     this.AddActiveSafeCellAction(this.matchState.board.cells[cell]);
                 }
             }
@@ -73,8 +77,8 @@ export class RuleEngine {
         if (this.player.playerState.hasSpecialPenaltyCell) {
 
             for (const cell of this.matchState.board.config.penaltyCellCapability) {
-                if (this.CellIsEmpty(cell)) {
-                    this.AddPenaltySafeCellAction(this.matchState.board.cells[cell]);
+                if (this.CellIsEmpty(cell) && !this.matchState.board.cells[cell].isPenalty) {
+                    this.AddPenaltyCellAction(this.matchState.board.cells[cell]);
                 }
             }
 
@@ -227,22 +231,29 @@ export class RuleEngine {
     private AddActiveSafeCellAction(cell: Cell): void {
 
         const action = new GameAction();
-
+        if (!this.player)
+            return;
         action.actionType =
             ActionType.ActivateSafeCellAction;
 
         action.path = [cell.index];
 
+        action.playerColor = this.player?.color;
+
         this.availableActions.push(action);
     }
-    private AddPenaltySafeCellAction(cell: Cell): void {
+    private AddPenaltyCellAction(cell: Cell): void {
 
         const action = new GameAction();
 
+        if (!this.player)
+            return;
         action.actionType =
             ActionType.ActivatePenaltyCellAction;
 
         action.path = [cell.index];
+
+        action.playerColor = this.player?.color;
 
         this.availableActions.push(action);
     }

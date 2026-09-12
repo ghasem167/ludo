@@ -6,8 +6,13 @@ import { TurnState } from "../Models/TurnState";
 export class TurnPhase extends PhaseBase {
 
     public override Start(context: MatchContext): void {
-        if (!context.state.players[context.state.turnState.currentPlayer].playerState.spawnedBefore &&
-            context.state.turnState.repeat <= 2) {
+        if (context.state.turnState.currentPlayer === null) {
+            context.state.turnState.currentPlayer = PlayerColor.Blue;
+            return;
+        }
+        context.logger.info(`TurnPhase: currentPlayer: ${context.state.turnState.currentPlayer}, repeat: ${context.state.turnState.repeat}, anotherChance: ${context.state.turnState.anotherChance}, hasReward: ${context.state.turnState.hasReward}, hasOffer: ${context.state.turnState.hasOffer}`);
+        if (!context.state.players[context.state.turnState.currentPlayer!].playerState.spawnedBefore &&
+            context.state.turnState.repeat < 2) {
 
             context.state.turnState.anotherChance = true;
 
@@ -31,25 +36,25 @@ export class TurnPhase extends PhaseBase {
                 turnState.hasOffer = false;
             }
             else {
-                turnState.currentPlayer = this.GoToNextPlayer(turnState.currentPlayer);
+                turnState.currentPlayer = this.GoToNextPlayer(turnState.currentPlayer!);
                 turnState.repeat = 0;
 
             }
-        } while (context.state.players[turnState.currentPlayer].playerState.isFinished &&
+        } while (context.state.players[turnState.currentPlayer!].playerState.isFinished &&
             context.state.winnerList.length < 3);
 
-        if (!(context.state.players[turnState.currentPlayer].playerState.lights > 0)) {
-            this.FirePlayer(context.state.players, turnState.currentPlayer);
+        if (!(context.state.players[turnState.currentPlayer!].playerState.lights > 0)) {
+           // this.FirePlayer(context.state.players, turnState.currentPlayer);
             context.state.label.presentPlayerCount--;
             if(context.state.label.presentPlayerCount == 0)
             {
-                context.state.matchEnd = true;
+                //context.state.matchEnd = true;
                 context.logger.info("TurnPhase: All players are fired, match ended");
             }
 
         }
         context.logger.info(`TurnPhase: currentPlayer: ${turnState.currentPlayer}, repeat: ${turnState.repeat}, anotherChance: ${turnState.anotherChance}, hasReward: ${turnState.hasReward}, hasOffer: ${turnState.hasOffer}`);
-        context.broadcaster.TurnStarted(turnState.currentPlayer);
+        context.broadcaster.TurnStarted(turnState.currentPlayer!);
         context.state.pendingPhase = Phase.Dice;
 
 

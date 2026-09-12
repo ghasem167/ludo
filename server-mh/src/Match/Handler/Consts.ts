@@ -7,21 +7,6 @@ export const DICE_WAITING_FOR_ANIMATION=1;
 export const ACTIONSELECT_HUMAN_TIMEOUT_SECONDS=6;
 export const ACTIONSELECT_BOT_TIMEOUT_SECONDS=2;
 export const END_MATCH_TIMEOUT_SECONDS=10;
-export const DEFAULT_ASSETS = {
-    pieces: [
-        "piece_default"
-    ],
-
-    dices: [
-        "dice_default"
-    ],
-
-    boards: [
-        "board_default"
-    ],
-
-    stickers: [],
-
-    phrases: []
-};
+export const DIAMOND_CURRENCY = "diamond";
+export const INITIAL_DIAMONDS = 1000;
 
