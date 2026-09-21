@@ -1,6 +1,7 @@
-using UnityEngine;
 
-[CreateAssetMenu(menuName = "Ludo/Shop Item/Avatar Item")]
+using System;
+
+[Serializable]
 public class AvatarItem : ShopItem
 {
 }

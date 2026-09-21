@@ -249,19 +249,8 @@ const DICE_WAITING_FOR_ANIMATION = 1;
 const ACTIONSELECT_HUMAN_TIMEOUT_SECONDS = 6;
 const ACTIONSELECT_BOT_TIMEOUT_SECONDS = 2;
 const END_MATCH_TIMEOUT_SECONDS = 10;
-const DEFAULT_ASSETS = {
-    pieces: [
-        "piece_default"
-    ],
-    dices: [
-        "dice_default"
-    ],
-    boards: [
-        "board_default"
-    ],
-    stickers: [],
-    phrases: []
-};
+const DIAMOND_CURRENCY = "diamond";
+const INITIAL_DIAMONDS = 1000;
 
 function matchInit(ctx, logger, nk, params) {
     logger.info("LUDO MATCH INIT");
@@ -675,10 +664,12 @@ class GameAction {
     ApplyActiveSafeCell(context) {
         const cell = context.state.board.cells[this.path[0]];
         cell.isSafe = true;
+        context.state.players[this.playerColor].playerState.hasSpecialSafeCell = false;
     }
     ApplyActivatePenaltyCell(context) {
         const cell = context.state.board.cells[this.path[0]];
         cell.isPenalty = true;
+        context.state.players[this.playerColor].playerState.hasSpecialPenaltyCell = false;
     }
     ToData() {
         const data = new GameActionData();
@@ -1242,10 +1233,121 @@ function matchSignal(ctx, logger, nk, dispatcher, tick, state, data) {
     };
 }
 
+function GetDiamonds(nk, userId) {
+    var _a;
+    const account = nk.accountGetId(userId);
+    if (!account || !account.wallet) {
+        return 0;
+    }
+    return (_a = account.wallet[DIAMOND_CURRENCY]) !== null && _a !== void 0 ? _a : 0;
+}
+function AddDiamonds(nk, userId, amount, reason, metadata = {}) {
+    if (amount <= 0) {
+        throw new Error("InvalidDiamondAmount");
+    }
+    const changeset = {
+        [DIAMOND_CURRENCY]: amount
+    };
+    const walletMetadata = Object.assign({ reason: reason }, metadata);
+    const result = nk.walletUpdate(userId, changeset, walletMetadata, true);
+    return result.updated[DIAMOND_CURRENCY];
+}
+function SpendDiamonds(nk, userId, amount, reason, metadata = {}) {
+    if (amount <= 0) {
+        throw new Error("InvalidDiamondAmount");
+    }
+    const currentDiamonds = GetDiamonds(nk, userId);
+    if (currentDiamonds < amount) {
+        throw new Error("InsufficientDiamonds");
+    }
+    const changeset = {
+        [DIAMOND_CURRENCY]: -amount
+    };
+    const walletMetadata = Object.assign({ reason: reason }, metadata);
+    const result = nk.walletUpdate(userId, changeset, walletMetadata, true);
+    return result.updated[DIAMOND_CURRENCY];
+}
+
+const ASSET_CATALOG = {
+    piece_default: {
+        type: "Piece",
+        price: 0,
+        defaultOwned: true
+    },
+    dice_default: {
+        type: "Dice",
+        price: 0,
+        defaultOwned: true
+    },
+    avatar_default: {
+        type: "Avatar",
+        price: 0,
+        defaultOwned: true
+    },
+    logo_default: {
+        type: "Logo",
+        price: 0,
+        defaultOwned: true
+    },
+    sticker_default: {
+        type: "Sticker",
+        price: 0,
+        defaultOwned: true
+    },
+    phrase_default: {
+        type: "Phrase",
+        price: 0,
+        defaultOwned: true
+    },
+    piece_1: {
+        type: "Piece",
+        price: 100,
+        defaultOwned: false
+    },
+    dice_1: {
+        type: "Dice",
+        price: 150,
+        defaultOwned: false
+    },
+    avatar_1: {
+        type: "Avatar",
+        price: 200,
+        defaultOwned: false
+    },
+    logo_1: {
+        type: "Logo",
+        price: 250,
+        defaultOwned: false
+    },
+    sticker_1: {
+        type: "Sticker",
+        price: 50,
+        defaultOwned: false
+    },
+    phrase_1: {
+        type: "Phrase",
+        price: 75,
+        defaultOwned: false
+    }
+};
+
 const INVENTORY_COLLECTION = "player";
 const INVENTORY_KEY = "inventory";
+const CUSTOMIZATION_COLLECTION = "player_customization";
+const CUSTOMIZATION_KEY = "customization";
+function LoadInventoryRpc(ctx, logger, nk, payload) {
+    const userId = ctx.userId;
+    if (!userId) {
+        throw new Error("Authentication required");
+    }
+    const inventory = LoadOrCreateInventory(ctx, logger, nk, userId);
+    return JSON.stringify(inventory);
+}
 function BuyAssetRpc(ctx, logger, nk, payload) {
     const request = JSON.parse(payload);
+    if (!request || !request.assetType) {
+        throw new Error("assetType is required");
+    }
     if (!request.assetId) {
         throw new Error("assetId is required");
     }
@@ -1253,144 +1355,350 @@ function BuyAssetRpc(ctx, logger, nk, payload) {
     if (!userId) {
         throw new Error("Authentication required");
     }
+    const asset = ASSET_CATALOG[request.assetId];
+    if (!asset) {
+        throw new Error("Asset not found");
+    }
+    if (asset.type !== request.assetType) {
+        throw new Error("Asset type mismatch");
+    }
+    const inventory = LoadOrCreateInventory(ctx, logger, nk, userId);
+    if (IsOwned(inventory, request.assetType, request.assetId)) {
+        throw new Error("Asset already owned");
+    }
+    const price = asset.price;
+    if (price === 0) {
+        AddAsset(inventory, request.assetId, asset.type);
+        SaveInventory(nk, userId, inventory);
+        return JSON.stringify({
+            success: true,
+            error: null,
+            inventory: inventory,
+            diamonds: GetDiamonds(nk, userId)
+        });
+    }
+    const diamonds = GetDiamonds(nk, userId);
+    if (diamonds < price) {
+        return JSON.stringify({
+            success: false,
+            error: "Not enough diamonds",
+            inventory: inventory,
+            diamonds: diamonds
+        });
+    }
+    const remainingDiamonds = SpendDiamonds(nk, userId, price, "buy_asset", {
+        assetId: request.assetId,
+        assetType: request.assetType
+    });
+    AddAsset(inventory, request.assetId, asset.type);
+    SaveInventory(nk, userId, inventory);
+    return JSON.stringify({
+        success: true,
+        error: null,
+        inventory: inventory,
+        diamonds: remainingDiamonds
+    });
+}
+function LoadOrCreateInventory(ctx, logger, nk, userId) {
     const records = nk.storageRead([
         {
             collection: INVENTORY_COLLECTION,
             key: INVENTORY_KEY,
-            userId: userId
+            userId
         }
     ]);
-    let inventory;
     if (records.length === 0) {
-        inventory = CreateDefaultInventory();
+        const inventory = CreateDefaultInventory();
+        SaveInventory(nk, userId, inventory);
+        return inventory;
     }
-    else {
-        inventory = ReadInventory(records[0]);
+    const inventory = ReadInventory(records[0]);
+    EnsureDefaultAssets(inventory);
+    SaveInventory(nk, userId, inventory);
+    return inventory;
+}
+function ReadInventory(record) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    const value = record.value;
+    return {
+        pieces: (_b = (_a = value.pieces) !== null && _a !== void 0 ? _a : value.Pieces) !== null && _b !== void 0 ? _b : [],
+        dices: (_d = (_c = value.dices) !== null && _c !== void 0 ? _c : value.Dices) !== null && _d !== void 0 ? _d : [],
+        avatars: (_f = (_e = value.avatars) !== null && _e !== void 0 ? _e : value.Avatars) !== null && _f !== void 0 ? _f : [],
+        logos: (_h = (_g = value.logos) !== null && _g !== void 0 ? _g : value.Logos) !== null && _h !== void 0 ? _h : [],
+        stickers: (_k = (_j = value.stickers) !== null && _j !== void 0 ? _j : value.Stickers) !== null && _k !== void 0 ? _k : [],
+        phrases: (_m = (_l = value.phrases) !== null && _l !== void 0 ? _l : value.Phrases) !== null && _m !== void 0 ? _m : []
+    };
+}
+function CreateDefaultInventory() {
+    const inventory = {
+        pieces: [],
+        dices: [],
+        avatars: [],
+        logos: [],
+        stickers: [],
+        phrases: []
+    };
+    for (const assetId in ASSET_CATALOG) {
+        const asset = ASSET_CATALOG[assetId];
+        if (!asset.defaultOwned)
+            continue;
+        AddAsset(inventory, assetId, asset.type);
     }
-    if (IsOwned(inventory, request.assetId)) {
-        throw new Error("Asset already owned");
+    return inventory;
+}
+function EnsureDefaultAssets(inventory) {
+    for (const assetId in ASSET_CATALOG) {
+        const asset = ASSET_CATALOG[assetId];
+        if (!asset.defaultOwned)
+            continue;
+        switch (asset.type) {
+            case "Piece":
+                AddIfMissing(inventory.pieces, assetId);
+                break;
+            case "Dice":
+                AddIfMissing(inventory.dices, assetId);
+                break;
+            case "Avatar":
+                AddIfMissing(inventory.avatars, assetId);
+                break;
+            case "Logo":
+                AddIfMissing(inventory.logos, assetId);
+                break;
+            case "Sticker":
+                AddIfMissing(inventory.stickers, assetId);
+                break;
+            case "Phrase":
+                AddIfMissing(inventory.phrases, assetId);
+                break;
+        }
     }
-    AddAsset(inventory, request.assetId);
+}
+function AddIfMissing(list, id) {
+    if (list.indexOf(id) === -1) {
+        list.push(id);
+    }
+}
+function SaveInventory(nk, userId, inventory) {
     nk.storageWrite([
         {
             collection: INVENTORY_COLLECTION,
             key: INVENTORY_KEY,
-            userId: userId,
+            userId,
             value: inventory,
             permissionRead: 1,
             permissionWrite: 0
         }
     ]);
-    return JSON.stringify(inventory);
 }
-function IsOwned(inventory, assetId) {
-    return inventory.pieces.indexOf(assetId) >= 0 ||
-        inventory.dices.indexOf(assetId) >= 0 ||
-        inventory.boards.indexOf(assetId) >= 0 ||
-        inventory.stickers.indexOf(assetId) >= 0 ||
-        inventory.phrases.indexOf(assetId) >= 0;
+function IsOwned(inventory, assetType, assetId) {
+    switch (assetType) {
+        case "Piece":
+            return inventory.pieces.indexOf(assetId) >= 0;
+        case "Dice":
+            return inventory.dices.indexOf(assetId) >= 0;
+        case "Logo":
+            return inventory.logos.indexOf(assetId) >= 0;
+        case "Avatar":
+            return inventory.avatars.indexOf(assetId) >= 0;
+        case "Sticker":
+            return inventory.stickers.indexOf(assetId) >= 0;
+        case "Phrase":
+            return inventory.phrases.indexOf(assetId) >= 0;
+        default:
+            return false;
+    }
 }
-function AddAsset(inventory, assetId) {
-    inventory.pieces.push(assetId);
+function AddAsset(inventory, assetId, assetType) {
+    switch (assetType) {
+        case "Piece":
+            AddIfMissing(inventory.pieces, assetId);
+            break;
+        case "Dice":
+            AddIfMissing(inventory.dices, assetId);
+            break;
+        case "Avatar":
+            AddIfMissing(inventory.avatars, assetId);
+            break;
+        case "Logo":
+            AddIfMissing(inventory.logos, assetId);
+            break;
+        case "Sticker":
+            AddIfMissing(inventory.stickers, assetId);
+            break;
+        case "Phrase":
+            AddIfMissing(inventory.phrases, assetId);
+            break;
+        default:
+            throw new Error("Invalid asset type");
+    }
 }
-function ReadInventory(record) {
-    var _a, _b, _c, _d, _e;
-    const value = record.value;
+function CreateDefaultCustomization() {
     return {
-        pieces: (_a = value.pieces) !== null && _a !== void 0 ? _a : [],
-        dices: (_b = value.dices) !== null && _b !== void 0 ? _b : [],
-        boards: (_c = value.boards) !== null && _c !== void 0 ? _c : [],
-        stickers: (_d = value.stickers) !== null && _d !== void 0 ? _d : [],
-        phrases: (_e = value.phrases) !== null && _e !== void 0 ? _e : []
+        pieceId: "piece_default",
+        diceId: "dice_default",
+        avatarId: "avatar_default",
+        logoId: "logo_default"
     };
 }
-function CreateDefaultInventory() {
-    return {
-        pieces: [...DEFAULT_ASSETS.pieces],
-        dices: [...DEFAULT_ASSETS.dices],
-        boards: [...DEFAULT_ASSETS.boards],
-        stickers: [],
-        phrases: []
-    };
-}
-
-const LoadInventory = (ctx, logger, nk, payload) => {
+const LoadCustomizationRpc = (ctx, logger, nk, payload) => {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const userId = ctx.userId;
-    if (userId === null || userId === undefined) {
+    if (!userId) {
         throw new Error("User not authenticated");
     }
     const result = nk.storageRead([
         {
-            collection: "player_inventory",
-            key: "inventory",
-            userId
-        }
-    ]);
-    let inventory;
-    if (result.length > 0) {
-        inventory = result[0].value;
-    }
-    else {
-        inventory = {
-            Pieces: ["piece_default"],
-            Dices: ["dice_default"],
-            Boards: ["board_default"]
-        };
-        nk.storageWrite([
-            {
-                collection: "player_inventory",
-                key: "inventory",
-                userId,
-                value: inventory,
-                permissionRead: 1,
-                permissionWrite: 0
-            }
-        ]);
-    }
-    return JSON.stringify(inventory);
-};
-const LoadCustomization = (ctx, logger, nk, payload) => {
-    const userId = ctx.userId;
-    if (userId === null || userId === undefined) {
-        throw new Error("User not authenticated");
-    }
-    const result = nk.storageRead([
-        {
-            collection: "player_customization",
-            key: "customization",
+            collection: CUSTOMIZATION_COLLECTION,
+            key: CUSTOMIZATION_KEY,
             userId
         }
     ]);
     let customization;
-    if (result.length > 0) {
-        customization = result[0].value;
+    if (result.length === 0) {
+        customization =
+            CreateDefaultCustomization();
     }
     else {
+        const value = result[0].value;
         customization = {
-            PieceId: 0,
-            DiceId: 0,
-            BoardId: 0,
+            pieceId: (_b = (_a = value.pieceId) !== null && _a !== void 0 ? _a : value.PieceId) !== null && _b !== void 0 ? _b : "piece_default",
+            diceId: (_d = (_c = value.diceId) !== null && _c !== void 0 ? _c : value.DiceId) !== null && _d !== void 0 ? _d : "dice_default",
+            avatarId: (_f = (_e = value.avatarId) !== null && _e !== void 0 ? _e : value.AvatarId) !== null && _f !== void 0 ? _f : "avatar_default",
+            logoId: (_h = (_g = value.logoId) !== null && _g !== void 0 ? _g : value.LogoId) !== null && _h !== void 0 ? _h : "logo_default"
         };
-        nk.storageWrite([
-            {
-                collection: "player_customization",
-                key: "customization",
-                userId,
-                value: customization,
-                permissionRead: 1,
-                permissionWrite: 0
-            }
-        ]);
     }
+    SaveCustomization(nk, userId, customization);
     return JSON.stringify(customization);
 };
+const SelectAsset = (ctx, logger, nk, payload) => {
+    const request = JSON.parse(payload);
+    if (!request.assetType) {
+        throw new Error("assetType is required");
+    }
+    if (!request.assetId) {
+        throw new Error("assetId is required");
+    }
+    const userId = ctx.userId;
+    if (!userId) {
+        throw new Error("User not authenticated");
+    }
+    const asset = ASSET_CATALOG[request.assetId];
+    if (!asset) {
+        throw new Error("Asset not found");
+    }
+    if (asset.type !==
+        request.assetType) {
+        throw new Error("Asset type mismatch");
+    }
+    if (request.assetType !== "Piece" &&
+        request.assetType !== "Dice" &&
+        request.assetType !== "Avatar" &&
+        request.assetType !== "Logo") {
+        throw new Error("This asset type cannot be selected as customization");
+    }
+    const inventory = LoadOrCreateInventory(ctx, logger, nk, userId);
+    if (!IsOwned(inventory, request.assetType, request.assetId)) {
+        throw new Error("Asset not owned");
+    }
+    const customization = LoadCustomizationData(nk, userId);
+    switch (request.assetType) {
+        case "Piece":
+            customization.pieceId =
+                request.assetId;
+            break;
+        case "Dice":
+            customization.diceId =
+                request.assetId;
+            break;
+        case "Avatar":
+            customization.avatarId =
+                request.assetId;
+            break;
+        case "Logo":
+            customization.logoId =
+                request.assetId;
+            break;
+    }
+    SaveCustomization(nk, userId, customization);
+    return JSON.stringify(customization);
+};
+function LoadCustomizationData(nk, userId) {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    const result = nk.storageRead([
+        {
+            collection: CUSTOMIZATION_COLLECTION,
+            key: CUSTOMIZATION_KEY,
+            userId
+        }
+    ]);
+    if (result.length === 0) {
+        return CreateDefaultCustomization();
+    }
+    const value = result[0].value;
+    return {
+        pieceId: (_b = (_a = value.pieceId) !== null && _a !== void 0 ? _a : value.PieceId) !== null && _b !== void 0 ? _b : "piece_default",
+        diceId: (_d = (_c = value.diceId) !== null && _c !== void 0 ? _c : value.DiceId) !== null && _d !== void 0 ? _d : "dice_default",
+        avatarId: (_f = (_e = value.avatarId) !== null && _e !== void 0 ? _e : value.AvatarId) !== null && _f !== void 0 ? _f : "avatar_default",
+        logoId: (_h = (_g = value.logoId) !== null && _g !== void 0 ? _g : value.LogoId) !== null && _h !== void 0 ? _h : "logo_default"
+    };
+}
+function SaveCustomization(nk, userId, customization) {
+    nk.storageWrite([
+        {
+            collection: CUSTOMIZATION_COLLECTION,
+            key: CUSTOMIZATION_KEY,
+            userId,
+            value: customization,
+            permissionRead: 1,
+            permissionWrite: 0
+        }
+    ]);
+}
+
+function InitializeNewUser(ctx, logger, nk, out, data) {
+    if (!out.created) {
+        return out;
+    }
+    if (!ctx.userId) {
+        logger.error("User ID is undefined for new user.");
+        return out;
+    }
+    try {
+        nk.walletUpdate(ctx.userId, {
+            [DIAMOND_CURRENCY]: INITIAL_DIAMONDS
+        }, {
+            reason: "initial_balance"
+        }, true);
+        logger.info("Initial diamonds granted to user: " + ctx.userId);
+    }
+    catch (error) {
+        logger.error("Failed to initialize wallet: " + error);
+    }
+    return out;
+}
+;
+
+function GetDiamondBalanceRpc(ctx, logger, nk, payload) {
+    if (!ctx.userId) {
+        logger.error("User ID is undefined for GetDiamondBalanceRpc.");
+        return JSON.stringify({
+            error: "User ID is undefined."
+        });
+    }
+    const diamonds = GetDiamonds(nk, ctx.userId);
+    return JSON.stringify({
+        diamonds: diamonds
+    });
+}
 
 function InitModule(ctx, logger, nk, initializer) {
     logger.info("Module is loading...");
     initializer.registerRpc("FindOrCreateMatch", FindOrCreateMatch);
     initializer.registerRpc("buy_asset", BuyAssetRpc);
-    initializer.registerRpc("LoadInventory", LoadInventory);
-    initializer.registerRpc("LoadCustomization", LoadCustomization);
+    initializer.registerRpc("LoadInventory", LoadInventoryRpc);
+    initializer.registerRpc("LoadCustomization", LoadCustomizationRpc);
+    initializer.registerRpc("get_diamond_balance", GetDiamondBalanceRpc);
+    initializer.registerAfterAuthenticateDevice(InitializeNewUser);
     try {
         initializer.registerMatch("ludo", {
             matchInit,

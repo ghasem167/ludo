@@ -13,10 +13,44 @@ MonoBehaviour:
   m_Name: Catalog
   m_EditorClassIdentifier: Assembly-CSharp::AssetCatalog
   Pieces:
-  - {fileID: 11400000, guid: 82b3022b54a39b64c85eceaa66224e6c, type: 2}
+  - Id: piece_default
+    DisplayName: default
+    Icon: {fileID: 21300000, guid: afaa5720568f49d429ef2d1a5386eecd, type: 3}
+    PreviewPrefab: {fileID: 1553854045876281491, guid: 006d7f33a47bf3c4783fb563c93e9f9c, type: 3}
+    GamePrefab: {fileID: 1553854045876281491, guid: 006d7f33a47bf3c4783fb563c93e9f9c, type: 3}
+    Price: 0
   Dices:
-  - {fileID: 11400000, guid: e1757c28a64d84c42922d36d251bb96a, type: 2}
-  Stickers: []
-  Phrases: []
-  Avatars: []
-  Logos: []
+  - Id: dice_default
+    DisplayName: default
+    Icon: {fileID: 21300000, guid: 8df20b6bb2b00d348bdd26095d84b6ff, type: 3}
+    PreviewPrefab: {fileID: 1324605756148454714, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+    GamePrefab: {fileID: 1324605756148454714, guid: e3b46f8598522aa45b2022b65463e3b3, type: 3}
+    Price: 0
+  Stickers:
+  - Id: 
+    DisplayName: 
+    Icon: {fileID: 0}
+    PreviewPrefab: {fileID: 0}
+    GamePrefab: {fileID: 0}
+    Price: 0
+  Phrases:
+  - Id: 
+    DisplayName: 
+    Icon: {fileID: 0}
+    PreviewPrefab: {fileID: 0}
+    GamePrefab: {fileID: 0}
+    Price: 0
+  Avatars:
+  - Id: avatar_default
+    DisplayName: default
+    Icon: {fileID: 0}
+    PreviewPrefab: {fileID: 0}
+    GamePrefab: {fileID: 0}
+    Price: 0
+  Logos:
+  - Id: logo_default
+    DisplayName: 
+    Icon: {fileID: 0}
+    PreviewPrefab: {fileID: 0}
+    GamePrefab: {fileID: 0}
+    Price: 0

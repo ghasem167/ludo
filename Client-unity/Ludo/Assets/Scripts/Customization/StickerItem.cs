@@ -1,6 +1,6 @@
-using UnityEngine;
+using System;
 
-[CreateAssetMenu(menuName = "Ludo/Shop Item/Sticker Item")]
+[Serializable]
 public class StickerItem : ShopItem
 {
 }

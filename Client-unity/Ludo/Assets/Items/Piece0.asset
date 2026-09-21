@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PieceItem
   Id: piece_default
   DisplayName: Free Piece
-  Icon: {fileID: 0}
+  Icon: {fileID: 21300000, guid: afaa5720568f49d429ef2d1a5386eecd, type: 3}
   PreviewPrefab: {fileID: 1553854045876281491, guid: 006d7f33a47bf3c4783fb563c93e9f9c, type: 3}
   GamePrefab: {fileID: 1553854045876281491, guid: 006d7f33a47bf3c4783fb563c93e9f9c, type: 3}
   Price: 0

@@ -1,4 +1,4 @@
-import { MatchBroadcaster } from "../../../Services/MatchBroadcaster";
+import { MatchBroadcaster } from "../../Services/MatchBroadcaster";
 import { MatchState } from "./MatchState";
 
 export class MatchContext {

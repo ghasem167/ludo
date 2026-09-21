@@ -1,6 +1,6 @@
-using UnityEngine;
+using System;
 
-[CreateAssetMenu(menuName = "Ludo/Shop Item/Dice Item")]
+[Serializable]
 public class DiceItem : ShopItem
 {
 }

@@ -1,20 +1,16 @@
 import { DIAMOND_CURRENCY, INITIAL_DIAMONDS } from "../Handler/Consts";
 
-export const InitializeNewUser: nkruntime.AfterHookFunction<
-    nkruntime.Session,
-    nkruntime.AuthenticateDeviceRequest
-> = function (
+export function InitializeNewUser(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
     nk: nkruntime.Nakama,
     out: nkruntime.Session,
     data: nkruntime.AuthenticateDeviceRequest
 ): nkruntime.Session {
-
     if (!out.created) {
         return out;
     }
-    if(!ctx.userId) {
+    if (!ctx.userId) {
         logger.error("User ID is undefined for new user.");
         return out;
     }

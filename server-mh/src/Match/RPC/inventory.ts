@@ -4,6 +4,9 @@
 // STORAGE
 // ============================================================
 
+import { GetDiamonds, SpendDiamonds } from "../Services/Wallet";
+import { ASSET_CATALOG } from "./AssetCatalog";
+
 const INVENTORY_COLLECTION = "player";
 const INVENTORY_KEY = "inventory";
 
@@ -15,11 +18,7 @@ const CUSTOMIZATION_KEY = "customization";
 // DTO
 // ============================================================
 
-interface BuyAssetRequest {
-    assetId: string;
-}
-
-interface SelectAssetRequest {
+interface AssetRequest {
     assetType: string;
     assetId: string;
 }
@@ -39,24 +38,35 @@ interface CustomizationData {
     avatarId: string;
     logoId: string;
 }
-interface BuyAssetResponse {
-    success: boolean;
-    error?: string;
-    inventory?: InventoryData;
-    diamonds?: number;
+
+export function LoadInventoryRpc(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    payload: string
+): string {
+
+    logger.info("load inventory rpc start")
+    const userId = ctx.userId;
+    
+    if (!userId) {
+        throw new Error("Authentication required");
+    }
+
+    const inventory = LoadOrCreateInventory(
+        ctx,
+        logger,
+        nk,
+        userId
+    );
+
+    return JSON.stringify(inventory);
 }
-
-
-
-// ============================================================
-// ASSET CATALOG
-// ============================================================
-
-
 
 // ============================================================
 // BUY ASSET
 // ============================================================
+
 
 export function BuyAssetRpc(
     ctx: nkruntime.Context,
@@ -65,9 +75,13 @@ export function BuyAssetRpc(
     payload: string
 ): string {
 
-    const request: BuyAssetRequest = JSON.parse(payload);
+    const request: AssetRequest = JSON.parse(payload);
 
-    if (!request || !request.assetId) {
+    if (!request || !request.assetType) {
+        throw new Error("assetType is required");
+    }
+
+    if (!request.assetId) {
         throw new Error("assetId is required");
     }
 
@@ -90,6 +104,15 @@ export function BuyAssetRpc(
 
 
     // --------------------------------------------------------
+    // Validate AssetType
+    // --------------------------------------------------------
+
+    if (asset.type !== request.assetType) {
+        throw new Error("Asset type mismatch");
+    }
+
+
+    // --------------------------------------------------------
     // Load inventory
     // --------------------------------------------------------
 
@@ -105,7 +128,11 @@ export function BuyAssetRpc(
     // Already owned?
     // --------------------------------------------------------
 
-    if (IsOwned(inventory, request.assetId)) {
+    if (IsOwned(
+        inventory,
+        request.assetType,
+        request.assetId
+    )) {
         throw new Error("Asset already owned");
     }
 
@@ -135,60 +162,84 @@ export function BuyAssetRpc(
             inventory
         );
 
-        return JSON.stringify(inventory);
+        return JSON.stringify({
+            success: true,
+            error: null,
+            inventory: inventory,
+            diamonds: GetDiamonds(nk, userId)
+        });
     }
 
 
     // --------------------------------------------------------
-    // PAID ASSET
+    // Check Diamonds
     // --------------------------------------------------------
 
-    /*
-     * هنوز Wallet سیستم بازی پیاده نشده است.
-     *
-     * خیلی مهم:
-     * فعلاً نباید Asset پولی را رایگان تحویل بدهیم.
-     *
-     * بعداً این قسمت را با Wallet خودت کامل می‌کنیم:
-     *
-     * 1. موجودی Diamond/Coin را بخوان
-     * 2. کافی نبود -> Error
-     * 3. مبلغ را کم کن
-     * 4. Asset را به Inventory اضافه کن
-     */
-
-    throw new Error(
-        "Paid asset purchase is not available yet"
-    );
-}
-
-
-// ============================================================
-// LOAD INVENTORY
-// ============================================================
-
-export const LoadInventory = (
-    ctx: nkruntime.Context,
-    logger: nkruntime.Logger,
-    nk: nkruntime.Nakama,
-    payload: string
-): string => {
-
-    const userId = ctx.userId;
-
-    if (!userId) {
-        throw new Error("User not authenticated");
-    }
-
-    const inventory = LoadOrCreateInventory(
-        ctx,
-        logger,
+    const diamonds = GetDiamonds(
         nk,
         userId
     );
 
-    return JSON.stringify(inventory);
-};
+    if (diamonds < price) {
+
+        return JSON.stringify({
+            success: false,
+            error: "Not enough diamonds",
+            inventory: inventory,
+            diamonds: diamonds
+        });
+    }
+
+
+    // --------------------------------------------------------
+    // Spend Diamonds
+    // --------------------------------------------------------
+
+    const remainingDiamonds = SpendDiamonds(
+        nk,
+        userId,
+        price,
+        "buy_asset",
+        {
+            assetId: request.assetId,
+            assetType: request.assetType
+        }
+    );
+
+
+    // --------------------------------------------------------
+    // Add Asset
+    // --------------------------------------------------------
+
+    AddAsset(
+        inventory,
+        request.assetId,
+        asset.type
+    );
+
+
+    // --------------------------------------------------------
+    // Save Inventory
+    // --------------------------------------------------------
+
+    SaveInventory(
+        nk,
+        userId,
+        inventory
+    );
+
+
+    // --------------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------------
+
+    return JSON.stringify({
+        success: true,
+        error: null,
+        inventory: inventory,
+        diamonds: remainingDiamonds
+    });
+}
 
 
 // ============================================================
@@ -331,42 +382,57 @@ function EnsureDefaultAssets(
     inventory: InventoryData
 ): void {
 
-    AddIfMissing(
-        inventory.pieces,
-        "piece_default"
-    );
+    for (const assetId in ASSET_CATALOG) {
 
-    AddIfMissing(
-        inventory.dices,
-        "dice_default"
-    );
+        const asset = ASSET_CATALOG[assetId];
 
-    AddIfMissing(
-        inventory.avatars,
-        "avatar_default"
-    );
+        if (!asset.defaultOwned)
+            continue;
 
-    AddIfMissing(
-        inventory.logos,
-        "logo_default"
-    );
+        switch (asset.type) {
 
+            case "Piece":
+                AddIfMissing(
+                    inventory.pieces,
+                    assetId
+                );
+                break;
 
-    for (const stickerId of DEFAULT_ASSETS.stickers) {
+            case "Dice":
+                AddIfMissing(
+                    inventory.dices,
+                    assetId
+                );
+                break;
 
-        AddIfMissing(
-            inventory.stickers,
-            stickerId
-        );
-    }
+            case "Avatar":
+                AddIfMissing(
+                    inventory.avatars,
+                    assetId
+                );
+                break;
 
+            case "Logo":
+                AddIfMissing(
+                    inventory.logos,
+                    assetId
+                );
+                break;
 
-    for (const phraseId of DEFAULT_ASSETS.phrases) {
+            case "Sticker":
+                AddIfMissing(
+                    inventory.stickers,
+                    assetId
+                );
+                break;
 
-        AddIfMissing(
-            inventory.phrases,
-            phraseId
-        );
+            case "Phrase":
+                AddIfMissing(
+                    inventory.phrases,
+                    assetId
+                );
+                break;
+        }
     }
 }
 
@@ -413,24 +479,33 @@ function SaveInventory(
 
 function IsOwned(
     inventory: InventoryData,
+    assetType: string,
     assetId: string
 ): boolean {
 
-    return (
+    switch (assetType) {
 
-        inventory.pieces.indexOf(assetId) >= 0 ||
+        case "Piece":
+            return inventory.pieces.indexOf(assetId) >= 0;
 
-        inventory.dices.indexOf(assetId) >= 0 ||
+        case "Dice":
+            return inventory.dices.indexOf(assetId) >= 0;
 
-        inventory.avatars.indexOf(assetId) >= 0 ||
+        case "Logo":
+            return inventory.logos.indexOf(assetId) >= 0;
 
-        inventory.logos.indexOf(assetId) >= 0 ||
+        case "Avatar":
+            return inventory.avatars.indexOf(assetId) >= 0;
 
-        inventory.stickers.indexOf(assetId) >= 0 ||
+        case "Sticker":
+            return inventory.stickers.indexOf(assetId) >= 0;
 
-        inventory.phrases.indexOf(assetId) >= 0
+        case "Phrase":
+            return inventory.phrases.indexOf(assetId) >= 0;
 
-    );
+        default:
+            return false;
+    }
 }
 
 
@@ -542,7 +617,7 @@ function CreateDefaultCustomization(): CustomizationData {
 // LOAD CUSTOMIZATION
 // ============================================================
 
-export const LoadCustomization = (
+export const LoadCustomizationRpc = (
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
     nk: nkruntime.Nakama,
@@ -628,14 +703,14 @@ export const LoadCustomization = (
 // SELECT ASSET
 // ============================================================
 
-export const SelectAsset = (
+export const SelectAssetRpc = (
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
     nk: nkruntime.Nakama,
     payload: string
 ): string => {
 
-    const request: SelectAssetRequest =
+    const request: AssetRequest =
         JSON.parse(payload);
 
 
@@ -729,6 +804,7 @@ export const SelectAsset = (
     if (
         !IsOwned(
             inventory,
+            request.assetType,
             request.assetId
         )
     ) {

@@ -4,7 +4,7 @@ interface AssetDefinition {
     defaultOwned: boolean;
 }
 
-const ASSET_CATALOG: { [id: string]: AssetDefinition } = {
+export const ASSET_CATALOG: { [id: string]: AssetDefinition } = {
 
     piece_default: {
         type: "Piece",

@@ -101,7 +101,8 @@ public class GameNetworkServices : IDisposable
     {
         try
         {
-            var result = await _socket.RpcAsync(
+            var result = await _client.RpcAsync(
+                _session,
                 "LoadInventory",
                 "{}"
             );
@@ -128,7 +129,8 @@ public class GameNetworkServices : IDisposable
     {
         try
         {
-            var result = await _socket.RpcAsync(
+            var result = await _client.RpcAsync(
+                _session,
                 "LoadCustomization",
                 "{}"
             );
@@ -273,13 +275,13 @@ public class GameNetworkServices : IDisposable
         return response.Payload;
     }
     public async Task<string> SelectAssetAsync(
-    string assetType,
+    AssetType assetType,
     string assetId)
     {
         string json = JsonUtility.ToJson(
             new SelectAssetRequest
             {
-                AssetType = assetType,
+                AssetType = assetType.ToString(),
                 AssetId = assetId
             });
 

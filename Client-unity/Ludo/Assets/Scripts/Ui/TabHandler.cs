@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TabHandler : MonoBehaviour
+public class TabsHandler : MonoBehaviour
 {
     [Serializable]
     public class Tab
@@ -13,6 +14,7 @@ public class TabHandler : MonoBehaviour
     }
 
     [SerializeField] private List<Tab> tabs = new();
+
     [SerializeField] private int defaultTab = 0;
 
     private int _currentTab = -1;
@@ -28,7 +30,7 @@ public class TabHandler : MonoBehaviour
             );
         }
     }
-
+ 
     private void Start()
     {
         OpenTab(defaultTab);

@@ -3,9 +3,9 @@ using System;
 [Serializable]
 public class PlayerCustomizationData
 {
-    public int LogoId;
+    public string LogoId;
 
-    public int AvatarId;
-    public int PieceId;
-    public int DiceId;
+    public string AvatarId;
+    public string PieceId;
+    public string DiceId;
 }

@@ -1,130 +1,181 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Store : MonoBehaviour
 {
     GameAssets assets;
 
     [SerializeField] private StoreCart storeCartPrefab;
-    private List<StoreCart> storeCarts = new List<StoreCart>();
-    [SerializeField] private Transform DiamondTab;
-    [SerializeField] private Transform LogoTab;
-    [SerializeField] private Transform DiceTab;
-    [SerializeField] private Transform PieceTab;
-    [SerializeField] private Transform AvatarTab;
+
+    [SerializeField] private StorePagesHandler storePagesHandler;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+
+
+    }
+    void OnEnable()
+    {
         assets = GameManager.Instance.GameAssets;
+        storePagesHandler.Initialize();
+        OpenStore();
     }
 
     public void OpenStore()
     {
-        foreach (var item in assets.catalog.Logos)
-        {
-            var storeCart = Instantiate(storeCartPrefab, LogoTab);
-            storeCart.Initialize(item.Id, item.Icon, item.Price, async () => { await assets.Inventory.BuyAsync(item.Id); });
-            storeCarts.Add(storeCart);
-        }
+        CreateStoreCarts(
+    assets.catalog.Logos,
+    AssetType.Logo,
+    x => x.Id,
+    x => x.Icon,
+    x => x.Price);
 
-        foreach (var item in assets.catalog.Dices)
-        {
-            var storeCart = Instantiate(storeCartPrefab, DiceTab);
-            storeCart.Initialize(item.Id, item.Icon, item.Price, async () => { await assets.Inventory.BuyAsync(item.Id); });
-            storeCarts.Add(storeCart);
-        }
+        CreateStoreCarts(
+            assets.catalog.Dices,
+            AssetType.Dice,
+            x => x.Id,
+            x => x.Icon,
+            x => x.Price);
 
-        foreach (var item in assets.catalog.Pieces)
-        {
-            var storeCart = Instantiate(storeCartPrefab, PieceTab);
-            storeCart.Initialize(item.Id, item.Icon, item.Price, async () => { await assets.Inventory.BuyAsync(item.Id); });
-            storeCarts.Add(storeCart);
-        }
+        CreateStoreCarts(
+            assets.catalog.Pieces,
+            AssetType.Piece,
+            x => x.Id,
+            x => x.Icon,
+            x => x.Price);
 
-        foreach (var item in assets.catalog.Avatars)
+        CreateStoreCarts(
+            assets.catalog.Avatars,
+            AssetType.Avatar,
+            x => x.Id,
+            x => x.Icon,
+            x => x.Price);
+        UpdateStoreCarts();
+    }
+    private void CreateStoreCarts<T>(
+        IEnumerable<T> items,
+        AssetType assetType,
+        Func<T, string> getId,
+        Func<T, Sprite> getIcon,
+        Func<T, int> getPrice)
+    {
+        foreach (var item in items)
         {
-            var storeCart = Instantiate(storeCartPrefab, AvatarTab);
-            storeCart.Initialize(item.Id, item.Icon, item.Price, async () => { await assets.Inventory.BuyAsync(item.Id); });
-            storeCarts.Add(storeCart);
+            var storeCart = Instantiate(storeCartPrefab);
+
+            string id = getId(item);
+
+            storeCart.Initialize(
+                id,
+                assetType,
+                getIcon(item),
+                getPrice(item),
+                async () =>
+                {
+                    await BuyAsset(storeCart, id);
+                });
+
+            storePagesHandler.AddCartToPage(storeCart);
         }
     }
-
     public void UpdateStoreCarts()
     {
-
-        foreach (var item in assets.Inventory.OwnedLogoIds)
+        foreach (var page in storePagesHandler.GetStorePages())
         {
-            SetBuied(item, () =>
+            foreach (var cart in page.GetStoreCarts())
             {
-                assets.Customization.SelectLogo(assets.Inventory.OwnedLogoIds.IndexOf(item));
-            });
-        }
+                bool isOwned = cart._type switch
+                {
+                    AssetType.Logo =>
+                        assets.Inventory.OwnedLogoIds.Contains(cart.iD),
 
-        foreach (var item in assets.Inventory.OwnedDiceIds)
-        {
-            SetBuied(item, () =>
-            {
-                assets.Customization.SelectDice(assets.Inventory.OwnedDiceIds.IndexOf(item));
+                    AssetType.Dice =>
+                        assets.Inventory.OwnedDiceIds.Contains(cart.iD),
 
-            });
-        }
+                    AssetType.Piece =>
+                        assets.Inventory.OwnedPieceIds.Contains(cart.iD),
 
-        foreach (var item in assets.Inventory.OwnedPieceIds)
-        {
-            SetBuied(item, () =>
-            {
-                assets.Customization.SelectPiece(assets.Inventory.OwnedPieceIds.IndexOf(item));
+                    AssetType.Avatar =>
+                        assets.Inventory.OwnedAvatarIds.Contains(cart.iD),
 
-            });
-        }
+                    _ => false
+                };
 
-        foreach (var item in assets.Inventory.OwnedAvatarIds)
-        {
-            SetBuied(item, () =>
-            {
-                assets.Customization.SelectAvatar(assets.Inventory.OwnedAvatarIds.IndexOf(item));
-            });
-        }
-        var selectedLogo = assets.Inventory.OwnedLogoIds[assets.Customization.SelectedLogoId];
-        var selectedDice = assets.Inventory.OwnedDiceIds[assets.Customization.SelectedDiceId];
-        var selectedPiece = assets.Inventory.OwnedPieceIds[assets.Customization.SelectedPieceId];
-        var selectedAvatar = assets.Inventory.OwnedAvatarIds[assets.Customization.SelectedAvatarId];
-        SetSelected(selectedLogo);
-        SetSelected(selectedDice);
-        SetSelected(selectedPiece);
-        SetSelected(selectedAvatar);
-    }
+                if (!isOwned)
+                {
+                    cart.SetNotOwned();
+                    continue;
+                }
 
-    private void SetSelected(string id)
-    {
-        foreach (var storeCart in storeCarts)
-        {
-            if (storeCart.iD == id)
-            {
+                bool isSelected = cart._type switch
+                {
+                    AssetType.Logo =>
+                        assets.Customization.SelectedLogoId == cart.iD,
 
-                storeCart.SetSelected();
+                    AssetType.Dice =>
+                        assets.Customization.SelectedDiceId == cart.iD,
 
+                    AssetType.Piece =>
+                        assets.Customization.SelectedPieceId == cart.iD,
 
+                    AssetType.Avatar =>
+                        assets.Customization.SelectedAvatarId == cart.iD,
+
+                    _ => false
+                };
+
+                if (isSelected)
+                {
+                    cart.SetSelected();
+                }
+                else
+                {
+                    cart.SetOwned(() =>
+                    {
+                        _ = SelectAsset(cart);
+                    });
+                }
             }
-
         }
     }
-    private void SetBuied(string id, Action onClick = null)
+
+    private void SetSelected(string id, AssetType type)
     {
-        foreach (var storeCart in storeCarts)
-        {
-            if (storeCart.iD == id)
-            {
-
-                storeCart.SetBuied(onClick);
-
-            }
-
-        }
+        storePagesHandler.SetSelected(id, type);
     }
 
+    private void SetOwned(string id, Action onClick = null)
+    {
+        storePagesHandler.SetOwned(id, onClick);
+    }
+    private async Task BuyAsset(StoreCart cart, string id)
+    {
+        // bool confirmed = await ShowBuyConfirmation();
 
+        // if (!confirmed)
+        //   return;
+
+        bool success = await assets.Inventory.BuyAsync(id);
+
+        if (!success)
+            return;
+
+        cart.SetOwned();
+    }
+    private async Task SelectAsset(StoreCart cart)
+    {
+        bool success = await assets.Customization.SelectAsync(
+            cart._type,
+            cart.iD);
+
+        if (!success)
+            return;
+
+        SetSelected(cart.iD, cart._type);
+    }
 
 
 }

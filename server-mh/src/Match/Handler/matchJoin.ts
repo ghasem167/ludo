@@ -2,7 +2,7 @@ import { Phase } from "./Enums";
 import { MatchState } from "./Models/MatchState";
 import { Player } from "./Models/Player";
 import { MATCH_TICK_RATE } from "./Consts";
-import { MatchBroadcaster } from "../../Services/MatchBroadcaster";
+import { MatchBroadcaster } from "../Services/MatchBroadcaster";
 
 export function matchJoin(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, dispatcher: nkruntime.MatchDispatcher, tick: number, state: nkruntime.MatchState, presences: nkruntime.Presence[]): { state: nkruntime.MatchState } | null {
 

@@ -101,7 +101,8 @@ public class PlayerInventory
         Debug.Log("Load Local");
         if (!PlayerPrefs.HasKey(LocalKey))
         {
-            Clear();
+            ApplyDefaultLocal();
+            SaveLocal();
             return;
         }
 
@@ -123,6 +124,20 @@ public class PlayerInventory
         }
 
         Apply(data);
+    }
+    private void ApplyDefaultLocal()
+    {
+        OwnedPieceIds.Clear();
+        OwnedDiceIds.Clear();
+        OwnedAvatarIds.Clear();
+        OwnedLogoIds.Clear();
+        OwnedStickerIds.Clear();
+        OwnedPhraseIds.Clear();
+
+        OwnedPieceIds.Add("piece_default");
+        OwnedDiceIds.Add("dice_default");
+        OwnedAvatarIds.Add("avatar_default");
+        OwnedLogoIds.Add("logo_default");
     }
     private void Clear()
     {

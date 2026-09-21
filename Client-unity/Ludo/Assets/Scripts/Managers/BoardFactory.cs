@@ -27,10 +27,12 @@ public class BoardFactory
 
 
         GameObject dicePrefab =
-            assets.catalog.GetDicePrefab(inventory.OwnedDiceIds[assets.Customization.SelectedDiceId]);
+      assets.catalog.GetDicePrefab(
+          assets.Customization.SelectedDiceId);
 
         GameObject piecePrefab =
-            assets.catalog.GetPiecePrefab(inventory.OwnedPieceIds[assets.Customization.SelectedPieceId]);
+            assets.catalog.GetPiecePrefab(
+                assets.Customization.SelectedPieceId);
 
         BuildDice(dicePrefab);
         BuildPlayers(piecePrefab);
@@ -74,8 +76,8 @@ public class BoardFactory
 
             GameObject newPieceObject =
                 Object.Instantiate(piecePrefab, parent);
-            
-           
+
+
 
             Piece newPiece =
                 newPieceObject.GetComponent<Piece>();

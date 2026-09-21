@@ -1,8 +1,9 @@
-import { GameActionData } from "../Match/Handler/Actions/Datas";
-import { GameAction } from "../Match/Handler/Actions/GameAction";
-import { PlayerColor, ServerOpCode } from "../Match/Handler/Enums";
-import { Piece } from "../Match/Handler/Models/Piece";
-import { Player } from "../Match/Handler/Models/Player";
+import { GameActionData } from "../Handler/Actions/Datas";
+import { GameAction } from "../Handler/Actions/GameAction";
+import { PlayerColor, ServerOpCode } from "../Handler/Enums";
+import { Piece } from "../Handler/Models/Piece";
+import { Player } from "../Handler/Models/Player";
+
 
 export class MatchBroadcaster {
 

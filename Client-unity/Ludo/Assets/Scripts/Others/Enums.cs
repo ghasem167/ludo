@@ -73,3 +73,12 @@ public enum Phase {
     Resolution = 4,
     Finish = 5
 }
+public enum AssetType
+{
+    Piece,
+    Dice,
+    Logo,
+    Avatar,
+    Sticker,
+    Phrase
+}

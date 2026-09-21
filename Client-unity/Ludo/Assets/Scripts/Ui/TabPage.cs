@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(CanvasGroup))]
@@ -6,7 +7,7 @@ public class TabPage : MonoBehaviour
 {
     [SerializeField] private float duration = 0.2f;
     [SerializeField] private float startScale = 0.95f;
-
+    
     private CanvasGroup _canvasGroup;
     private Coroutine _transitionCoroutine;
 
@@ -63,4 +64,5 @@ public class TabPage : MonoBehaviour
 
         _transitionCoroutine = null;
     }
+  
 }

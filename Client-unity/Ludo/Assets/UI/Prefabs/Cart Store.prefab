@@ -377,7 +377,7 @@ GameObject:
   - component: {fileID: 8853555315272249132}
   - component: {fileID: 8118601683866953280}
   m_Layer: 5
-  m_Name: Buied
+  m_Name: Owned
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -594,7 +594,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18.8
+  m_fontSize: 10
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -802,11 +802,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CArt
   iD: 
+  _type: 0
   image: {fileID: 1811817136357380864}
   priceText: {fileID: 7445887113208225224}
   priceGameObject: {fileID: 7445887113967318622}
   selectedText: {fileID: 2153377290695703933}
-  buiedText: {fileID: 8118601683866953280}
+  ownedText: {fileID: 8118601683866953280}
   button: {fileID: 7445887113253093312}
 --- !u!1 &7445887113967318622
 GameObject:
@@ -820,7 +821,7 @@ GameObject:
   - component: {fileID: 7445887113967318627}
   - component: {fileID: 6998995072936853817}
   m_Layer: 5
-  m_Name: IsntBuied
+  m_Name: initial
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Nakama;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class PlayerCustomization
@@ -10,10 +11,10 @@ public class PlayerCustomization
     private readonly GameNetworkServices _network;
     private readonly PlayerInventory _inventory;
 
-    public int SelectedLogoId { get; private set; }
-    public int SelectedAvatarId { get; private set; }
-    public int SelectedPieceId { get; private set; }
-    public int SelectedDiceId { get; private set; }
+    public string SelectedLogoId { get; private set; }
+    public string SelectedAvatarId { get; private set; }
+    public string SelectedPieceId { get; private set; }
+    public string SelectedDiceId { get; private set; }
 
 
     public PlayerCustomization(
@@ -55,56 +56,81 @@ public class PlayerCustomization
             LoadLocal();
         }
     }
-
-    public void SelectLogo(int logoId)
+    public async Task<bool> SelectAsync(AssetType type, string assetId)
     {
-        if (!_inventory.OwnedLogoIds.Contains(logoId.ToString()))
+        if (string.IsNullOrEmpty(assetId))
+            return false;
+
+        bool isOwned = type switch
         {
-            Debug.LogWarning($"Player does not own logo with ID {logoId}");
-            return;
+            AssetType.Logo => _inventory.OwnedLogoIds.Contains(assetId),
+            AssetType.Avatar => _inventory.OwnedAvatarIds.Contains(assetId),
+            AssetType.Piece => _inventory.OwnedPieceIds.Contains(assetId),
+            AssetType.Dice => _inventory.OwnedDiceIds.Contains(assetId),
+            _ => false
+        };
+
+        if (!isOwned)
+        {
+            Debug.LogWarning(
+                $"Player does not own {type} with ID {assetId}");
+
+            return false;
         }
 
-        SelectedLogoId = logoId;
-        _=_network.SelectAssetAsync(logoId.ToString(), "Logo");
-        SaveLocal();
-    }
-    public void SelectAvatar(int avatarId)
-    {
-        if (!_inventory.OwnedAvatarIds.Contains(avatarId.ToString()))
+        try
         {
-            Debug.LogWarning($"Player does not own avatar with ID {avatarId}");
-            return;
-        }
+            string json = await _network.SelectAssetAsync(
+                type,
+                assetId);
 
-        SelectedAvatarId = avatarId;
-        _=_network.SelectAssetAsync(avatarId.ToString(), "Avatar");
-        SaveLocal();
-    }
-    public void SelectPiece(int pieceId)
-    {
-        if (!_inventory.OwnedPieceIds.Contains(pieceId.ToString()))
+            if (string.IsNullOrEmpty(json))
+                return false;
+
+            SelectAssetResponse response =
+                JsonConvert.DeserializeObject<SelectAssetResponse>(json);
+
+            if (response == null || !response.Success)
+            {
+                Debug.LogWarning(
+                    $"Select failed: {response?.Error}");
+
+                return false;
+            }
+
+            switch (type)
+            {
+                case AssetType.Logo:
+                    SelectedLogoId = assetId;
+                    break;
+
+                case AssetType.Avatar:
+                    SelectedAvatarId = assetId;
+                    break;
+
+                case AssetType.Piece:
+                    SelectedPieceId = assetId;
+                    break;
+
+                case AssetType.Dice:
+                    SelectedDiceId = assetId;
+                    break;
+
+                default:
+                    return false;
+            }
+
+            SaveLocal();
+            return true;
+        }
+        catch (Exception e)
         {
-            Debug.LogWarning($"Player does not own piece with ID {pieceId}");
-            return;
+            Debug.LogError(
+                $"Select {type} failed: {e.Message}");
+
+            return false;
         }
-
-        SelectedPieceId = pieceId;
-        _=_network.SelectAssetAsync(pieceId.ToString(), "Piece");
-        SaveLocal();
     }
-    public void SelectDice(int diceId)
-    {
-        if (!_inventory.OwnedDiceIds.Contains(diceId.ToString()))
-        {
-            Debug.LogWarning($"Player does not own dice with ID {diceId}");
-            return;
-        }
-
-        SelectedDiceId = diceId;
-        _=_network.SelectAssetAsync(diceId.ToString(), "Dice");
-        SaveLocal();
-    }
-
     private void Apply(PlayerCustomizationData data)
     {
         SelectedLogoId = data.LogoId;
@@ -112,8 +138,8 @@ public class PlayerCustomization
         SelectedPieceId = data.PieceId;
         SelectedDiceId = data.DiceId;
     }
-   
-   
+
+
     private void SaveLocal()
     {
         PlayerCustomizationData data =
@@ -161,12 +187,12 @@ public class PlayerCustomization
     }
     private void SetDefaultSelection()
     {
-       
 
-        SelectedPieceId =0;
-        SelectedDiceId =0;
-        SelectedLogoId =0;
-        SelectedAvatarId =0;
+
+        SelectedPieceId = "piece_default";
+        SelectedDiceId = "dice_default";
+        SelectedLogoId = "logo_deafult";
+        SelectedAvatarId = "avatar_default";
 
         SaveLocal();
     }

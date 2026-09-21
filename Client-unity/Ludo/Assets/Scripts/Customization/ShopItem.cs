@@ -1,7 +1,8 @@
 
+using System;
 using UnityEngine;
-
-public class ShopItem : ScriptableObject
+[Serializable]
+public class ShopItem
 {
     public string Id;
 

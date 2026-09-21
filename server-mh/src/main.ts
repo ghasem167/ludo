@@ -7,8 +7,7 @@ import { matchTerminate } from "./Match/Handler/matchTerminate";
 import { matchSignal } from "./Match/Handler/matchSignal";
 import { GameMode, TeamMode } from "./Match/Handler/Enums";
 import { MatchLabel } from "./Match/Handler/MatchLabel";
-import { BuyAssetRpc } from "./Match/RPC/inventory";
-import { LoadCustomization, LoadInventory } from "./Match/RPC/inventory";
+import { BuyAssetRpc, LoadCustomizationRpc,LoadInventoryRpc, SelectAssetRpc } from "./Match/RPC/inventory";
 import { InitializeNewUser } from "./Match/Hooks/InitializeNewUser";
 import { GetDiamondBalanceRpc } from "./Match/RPC/WalletRpcs";
 function InitModule(
@@ -30,17 +29,21 @@ function InitModule(
     );
     initializer.registerRpc(
         "LoadInventory",
-        LoadInventory
+        LoadInventoryRpc
     );
 
     initializer.registerRpc(
         "LoadCustomization",
-        LoadCustomization
+        LoadCustomizationRpc
     );
 
     initializer.registerRpc(
         "get_diamond_balance",
         GetDiamondBalanceRpc
+    );
+     initializer.registerRpc(
+        "select_asset",
+        SelectAssetRpc
     );
 
     // =========================
