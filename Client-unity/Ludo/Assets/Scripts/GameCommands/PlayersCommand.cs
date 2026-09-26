@@ -3,17 +3,18 @@ using System.Threading.Tasks;
 
 public class PlayersCommand : GameCommand
 {
-    private readonly List<PlayerDto> _players;
+    private readonly List<PlayerMatchDto> _players;
 
-    public PlayersCommand(List<PlayerDto> players)
+    public PlayersCommand(List<PlayerMatchDto> players)
     {
         _players = players;
     }
 
-    public override async Task Execute()
+    public override Task Execute()
     {
-        // Register players
+        // the roster of the lobby we just joined (the server sends it only to the new presence)
+        GameManager.Instance?.ApplyPlayers(_players);
 
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 }

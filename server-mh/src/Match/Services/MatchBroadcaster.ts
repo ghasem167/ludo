@@ -1,8 +1,10 @@
 import { GameActionData } from "../Handler/Actions/Datas";
 import { GameAction } from "../Handler/Actions/GameAction";
-import { PlayerColor, ServerOpCode } from "../Handler/Enums";
+import { PlayerColor, PlayerLevel, ServerOpCode } from "../Handler/Enums";
 import { Piece } from "../Handler/Models/Piece";
 import { Player } from "../Handler/Models/Player";
+import { LoadCustomizationData } from "../RPC/inventory";
+import { GetPlayerLevel, LoadPlayerStats } from "../RPC/PlayerStats";
 
 
 export class MatchBroadcaster {
@@ -24,36 +26,91 @@ export class MatchBroadcaster {
     }
 
 
-    public PlayerAdded(player: Player): void {
+    public PlayerAdded(
+        player: Player,
+        nk: nkruntime.Nakama
+    ): void {
 
-        const message: PlayerAddedMessage = {
+        const stats = LoadPlayerStats(
+            nk,
+            player.userId
+        );
+
+        const custom = LoadCustomizationData(
+            nk,
+            player.userId
+        );
+
+        const message: PlayerMatchInfo = {
             player: {
                 id: player.userId,
-                nikeName: player.userNickName,
-                color: player.color
-            }
+                userNikeName: player.userNickName,
+                avatarId:custom.avatarId
+            },
+
+            stat: {
+                xp: stats.xp,
+                trophies: stats.trophies,
+                level: GetPlayerLevel(stats.xp)
+            },
+
+            custom: {
+                
+                logoId: custom.logoId,
+                pieceId: custom.pieceId
+            },
+
+            color: player.color
         };
 
         this.dispatcher.broadcastMessage(
             ServerOpCode.PlayerAdded,
             JSON.stringify(message)
-
         );
     }
-
-    public Players(
+    public PlayersInMatch(
         presence: nkruntime.Presence,
+        nk: nkruntime.Nakama,
         players: Player[]
     ): void {
 
         const message: PlayersMessage = {
             players: players
                 .filter(p => !p.playerState.isBot)
-                .map(p => ({
-                    id: p.userId,
-                    userNikeName: p.userNickName,
-                    color: p.color
-                }))
+                .map(p => {
+
+                    const stats = LoadPlayerStats(
+                        nk,
+                        p.userId
+                    );
+
+                    const custom = LoadCustomizationData(
+                        nk,
+                        p.userId
+                    );
+
+                    return {
+                        player: {
+                            id: p.userId,
+                            userNikeName: p.userNickName,
+                            avatarId: custom.avatarId,
+                        },
+
+                        stat: {
+                            xp: stats.xp,
+                            trophies: stats.trophies,
+                            level: GetPlayerLevel(stats.xp)
+                        },
+
+                        custom: {
+                            
+                            logoId: custom.logoId,
+                            pieceId: custom.pieceId
+                        },
+
+                        color: p.color
+                    };
+                })
         };
 
         this.dispatcher.broadcastMessage(
@@ -232,19 +289,29 @@ export class MatchBroadcaster {
     }
 }
 
-export interface PlayerAddedMessage {
-    player: {
-        id: string;
-        nikeName: string;
-        color: PlayerColor;
-    };
-}
+
 export interface PlayersMessage {
-    players: PlayerInfo[];
+    players: PlayerMatchInfo[];
 }
 
 export interface PlayerInfo {
     id: string;
     userNikeName: string;
+    avatarId: string;
+}
+export interface PlayerCustomInfo {
+    
+    logoId: string;
+    pieceId: string;
+}
+export interface PlayerMatchInfo {
+    player: PlayerInfo;
+    stat: PlayerStatInfo;
+    custom: PlayerCustomInfo;
     color: PlayerColor;
+}
+export interface PlayerStatInfo {
+    xp: number;
+    trophies: number;
+    level: PlayerLevel;
 }

@@ -25,6 +25,11 @@ public class CommandHandler : MonoBehaviour
         if (_isProcessing)
             return;
 
+        // commands that arrive while a scene is loading must wait: they usually target
+        // objects of the scene that is not there yet (board, pieces, ui)
+        if (GameManager.Instance != null && GameManager.Instance.IsLoadingScene)
+            return;
+
         if (_queue.Count == 0)
             return;
 

@@ -65,7 +65,18 @@ public enum TeamMode
     None = 0,
     TwoVsTwo = 1
 }
-public enum Phase {
+/// <summary>
+/// Territory (قلمرو) picked on the Classical Game page: it defines the entry fee / reward tier.
+/// </summary>
+public enum Territory
+{
+    Beginner = 0,
+    Team = 1,
+    Pro = 2,
+    Aristocratic = 3
+}
+public enum Phase
+{
     Start = 0,
     Turn = 1,
     Dice = 2,
@@ -81,4 +92,10 @@ public enum AssetType
     Avatar,
     Sticker,
     Phrase
+}
+public enum PlayerLevel
+{
+    Beginner,
+    Professional,
+    Master
 }

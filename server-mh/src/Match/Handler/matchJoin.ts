@@ -45,13 +45,15 @@ export function matchJoin(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: 
 
 				// اطلاع به بازیکنان قبلی
 				broadcaster.PlayerAdded(
-					newPresence
+					newPresence,
+					nk
 
 				);
 
 				// ارسال بازیکنان موجود به بازیکن تازه‌وارد
-				broadcaster.Players(
+				broadcaster.PlayersInMatch(
 					presence,
+					nk,
 					mState.players
 				);
 			}

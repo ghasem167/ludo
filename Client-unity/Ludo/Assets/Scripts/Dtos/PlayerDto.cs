@@ -1,15 +1,32 @@
 
 using System;
+using Newtonsoft.Json;
 
 [Serializable]
 public class PlayerDto
 {
     public string Id;
-    public string Username;
-    public PlayerColor Color;
 
-    private string GetDebuggerDisplay()
+    /// <summary>
+    /// Used by offline matches.
+    /// </summary>
+    public string Username;
+
+    [JsonProperty("userNikeName")]
+    public string UserNickname;
+
+    public string DisplayName
     {
-        return ToString();
+        get
+        {
+            if (!string.IsNullOrEmpty(Username))
+                return Username;
+
+            if (!string.IsNullOrEmpty(UserNickname))
+                return UserNickname;
+
+            return "Player";
+        }
     }
 }
+

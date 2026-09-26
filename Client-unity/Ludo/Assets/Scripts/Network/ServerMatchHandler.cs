@@ -101,8 +101,8 @@ public class ServerMatchHandler
 
 
             default:
-                Debug.Log("not impolement message");
-                throw new NotImplementedException();
+                Debug.LogWarning($"[ServerMatchHandler] opcode {message.OpCode} is not handled yet");
+                return null;
         }
     }
 

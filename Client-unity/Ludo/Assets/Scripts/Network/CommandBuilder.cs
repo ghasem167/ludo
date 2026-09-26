@@ -14,7 +14,16 @@ public class CommandBuilder
     }
     public GameCommand BuildPlayerAdded(IMatchState message)
     {
-        var dto = Deserialize<PlayerDto>(message);
+        var dto = Deserialize<PlayerMatchDto>(message);
+
+        if (dto == null)
+        {
+            Debug.LogWarning(
+                "[CommandBuilder] PlayerAdded message had no player payload"
+            );
+
+            return null;
+        }
 
         return new PlayerAddedCommand(dto);
     }

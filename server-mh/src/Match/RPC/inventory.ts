@@ -886,7 +886,7 @@ export const SelectAssetRpc = (
 // LOAD CUSTOMIZATION DATA
 // ============================================================
 
-function LoadCustomizationData(
+export function LoadCustomizationData(
     nk: nkruntime.Nakama,
     userId: string
 ): CustomizationData {

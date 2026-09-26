@@ -1,5 +1,4 @@
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
@@ -8,10 +7,13 @@ public class LobbyStartedCommand : GameCommand
     public LobbyStartedCommand()
     {
     }
-    public override async Task Execute()
+
+    public override Task Execute()
     {
-        //Start Show Lobby Page
+        // the server already received us and is counting down to the match: tell the lobby page
+        GameManager.Instance?.OnLobbyStarted();
         UnityEngine.Debug.Log("lobby executed");
-        await Task.CompletedTask;
+
+        return Task.CompletedTask;
     }
 }

@@ -1,0 +1,3 @@
+﻿scene = D:\ludo\ludo\Client-unity\Ludo\Assets\Scenes\Game UI.unity
+go#369721849 'Btn closs' :: SetActive(Avatar Touche Page,0)
+go#1482282777 'BtnOffline' :: OpenPage(id464524062,0)

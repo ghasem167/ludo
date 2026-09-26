@@ -55,3 +55,8 @@ export enum ActionType {
     ActivateSafeCellAction = 2,
     ActivatePenaltyCellAction = 3
 }
+export enum PlayerLevel {
+    Beginner = "Beginner",
+    Professional = "Professional",
+    Master = "Master"
+}

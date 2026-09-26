@@ -8,6 +8,8 @@ public class Store : MonoBehaviour
 {
     GameAssets assets;
 
+    private bool _initialized;
+
     [SerializeField] private StoreCart storeCartPrefab;
 
     [SerializeField] private StorePagesHandler storePagesHandler;
@@ -19,13 +21,26 @@ public class Store : MonoBehaviour
     }
     void OnEnable()
     {
+        // the page can be hidden/shown by the menu navigator: build the carts only once
+        if (_initialized) return;
+        _initialized = true;
+
         assets = GameManager.Instance.GameAssets;
         storePagesHandler.Initialize();
         OpenStore();
     }
 
+    /// <summary>Re-applies the owned/selected state without rebuilding the carts.</summary>
+    public void RefreshStore()
+    {
+        if (!_initialized || assets == null) return;
+        UpdateStoreCarts();
+    }
+
     public void OpenStore()
     {
+        ClearCarts();
+
         CreateStoreCarts(
     assets.catalog.Logos,
     AssetType.Logo,
@@ -54,6 +69,19 @@ public class Store : MonoBehaviour
             x => x.Icon,
             x => x.Price);
         UpdateStoreCarts();
+    }
+    /// <summary>Destroys the carts built by a previous OpenStore() call.</summary>
+    private void ClearCarts()
+    {
+        foreach (var page in storePagesHandler.GetStorePages())
+        {
+            var carts = page.GetStoreCarts();
+
+            for (int i = carts.Count - 1; i >= 0; i--)
+                if (carts[i] != null) Destroy(carts[i].gameObject);
+
+            carts.Clear();
+        }
     }
     private void CreateStoreCarts<T>(
         IEnumerable<T> items,

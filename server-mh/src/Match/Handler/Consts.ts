@@ -9,4 +9,6 @@ export const ACTIONSELECT_BOT_TIMEOUT_SECONDS=2;
 export const END_MATCH_TIMEOUT_SECONDS=10;
 export const DIAMOND_CURRENCY = "diamond";
 export const INITIAL_DIAMONDS = 1000;
+export const XP_BEGINNER = 10000;
+export const XP_PROFESSIONAL = 50000;
 

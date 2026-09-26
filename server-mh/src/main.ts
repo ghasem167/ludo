@@ -7,9 +7,12 @@ import { matchTerminate } from "./Match/Handler/matchTerminate";
 import { matchSignal } from "./Match/Handler/matchSignal";
 import { GameMode, TeamMode } from "./Match/Handler/Enums";
 import { MatchLabel } from "./Match/Handler/MatchLabel";
-import { BuyAssetRpc, LoadCustomizationRpc,LoadInventoryRpc, SelectAssetRpc } from "./Match/RPC/inventory";
+import { BuyAssetRpc, LoadCustomizationRpc, LoadInventoryRpc, SelectAssetRpc } from "./Match/RPC/inventory";
 import { InitializeNewUser } from "./Match/Hooks/InitializeNewUser";
 import { GetDiamondBalanceRpc } from "./Match/RPC/WalletRpcs";
+import { GetLeaderboardRpc, InitializeLeaderboards } from "./Match/RPC/LeaderBoard";
+import { GetStatRpc } from "./Match/RPC/PlayerStats";
+
 function InitModule(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
@@ -17,12 +20,15 @@ function InitModule(
     initializer: nkruntime.Initializer
 ) {
     logger.info("Module is loading...");
-
+    InitializeLeaderboards(nk, logger);
     // =========================
     // REGISTER RPC
     // =========================
 
-    initializer.registerRpc("FindOrCreateMatch", FindOrCreateMatch);
+    initializer.registerRpc(
+        "FindOrCreateMatch",
+        FindOrCreateMatch
+    );
     initializer.registerRpc(
         "buy_asset",
         BuyAssetRpc
@@ -41,10 +47,21 @@ function InitModule(
         "get_diamond_balance",
         GetDiamondBalanceRpc
     );
-     initializer.registerRpc(
+    initializer.registerRpc(
         "select_asset",
         SelectAssetRpc
     );
+
+
+    initializer.registerRpc(
+        "get_stat",
+        GetStatRpc
+    );
+    initializer.registerRpc(
+        "get_leaderboard",
+        GetLeaderboardRpc
+    )
+
 
     // =========================
     // REGISTER HOOKS

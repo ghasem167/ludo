@@ -141,15 +141,17 @@ public class BoardFactory
 
         Board.dice = newDice;
     }
-
-    public void UpdatePlayerDto(PlayerDto dto)
+    public void UpdatePlayerDto(PlayerMatchDto dto)
     {
-        Board.players[(int)dto.Color].userId = dto.Id;
+        Board.players[(int)dto.Color].userId = dto.Player.Id;
 
-        Board.players[(int)dto.Color].userName = dto.Username;
-        if (dto.Id == GameManager.Instance.ThisContext.userId)
+        Board.players[(int)dto.Color].userName =
+            dto.Player.DisplayName;
+
+        if (dto.Player.Id == GameManager.Instance.ThisContext.userId)
         {
-            GameManager.Instance.GamePlayHandler.LastContext.thisPlayerColor = dto.Color;
+            GameManager.Instance.GamePlayHandler.LastContext.thisPlayerColor =
+                dto.Color;
         }
     }
 }
